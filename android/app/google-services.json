@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "907240157351",
+    "project_id": "techmart-67cda",
+    "storage_bucket": "techmart-67cda.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:907240157351:android:4d8455b78e5d5ad3876b82",
+        "android_client_info": {
+          "package_name": "com.example.smart_store"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "907240157351-d3p0mvdg4oju4sflj166cieucn3gk0k7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5ny_FLB1klFwkV1wj1Jtp5TSW6Zj1z7Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "907240157351-d3p0mvdg4oju4sflj166cieucn3gk0k7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

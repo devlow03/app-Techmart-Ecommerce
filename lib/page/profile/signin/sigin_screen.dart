@@ -49,9 +49,9 @@ class _SignInScreenState extends State<SignInScreen> {
                     children: [
                       GlobalTextField(
                         controller: emailControl,
-                        hint: 'Email',
+                        hint: 'Tài khoản',
                         requireInput: '',
-                        prefixIcon: Icon(Icons.email, color: Colors.blue),
+                        prefixIcon: Icon(Icons.person, color: Colors.blue),
                         // validator: Validator.email,
                         textInputType: TextInputType.emailAddress,
                       ),
@@ -89,7 +89,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         ],
                       ),
                       SizedBox(
-                        height: 30,
+                        height: 20,
                       ),
                       Container(
                         width: MediaQuery.of(context).size.width * .9,
@@ -194,10 +194,81 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                 ),
               ),
+                SizedBox(height: 10,),
+                Text(
+                  'HOẶC',
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.black,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1),
+                ),
+                SizedBox(height: 10,),
+                Container(
+                  width: MediaQuery.of(context).size.width * .9,
+                  height: 55,
+                  child: ElevatedButton(
+                    onPressed: ()  {},
+                    child: Row(
 
+                      children: [
+                        Image.asset("assets/images/google_ico.png",
+                        height: 30,
+                          width: 30,
+                        ),
+                        SizedBox(width: 50,),
+                        Text(
+                          'ĐĂNG NHẬP VỚI GOOGLE',
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black,
+                              letterSpacing: 1.5),
+                        ),
+                      ],
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                      primary:Colors.white,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10,),
+                Container(
+                  width: MediaQuery.of(context).size.width * .9,
+                  height: 55,
+                  child: ElevatedButton(
+                    onPressed: ()  {},
+                    child: Row(
+
+                      children: [
+                        Image.asset("assets/images/fb_ico.png",
+                          height: 30,
+                          width: 30,
+                        ),
+                        SizedBox(width: 50,),
+                        Text(
+                          'ĐĂNG NHẬP VỚI FACEBOOK',
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black,
+                              letterSpacing: 1.5),
+                        ),
+                      ],
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                      primary:Colors.white,
+                    ),
+                  ),
+                ),
                 SizedBox(
                   height: 20,
                 ),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -231,6 +302,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 SizedBox(
                   height: 10,
                 ),
+
                 InkWell(
                     onTap: () {
                       Get.back();
@@ -243,7 +315,8 @@ class _SignInScreenState extends State<SignInScreen> {
                           fontSize: 16,
                           color: Colors.grey.shade700,
                           letterSpacing: 1),
-                    ))
+                    )),
+                SizedBox(height: 30,),
               ],
             ),
           ),

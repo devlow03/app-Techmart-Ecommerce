@@ -299,16 +299,7 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                       color: Colors.grey.shade100,
                     ),
                     SizedBox(height: 10,),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Danh mục sản phẩm',
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w700),
-                        ),
-                      ],
-                    ),
+
                     SizedBox(
                       height: 20,
                     ),

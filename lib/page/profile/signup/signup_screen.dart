@@ -44,9 +44,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     GlobalTextField(
                       controller: emailControl,
                       // title: 'Email',
-                      hint: 'Email',
+                      hint: 'Tài khoản',
                       requireInput: '',
-                      prefixIcon: Icon(Icons.email, color: Colors.blue),
+                      prefixIcon: Icon(Icons.person, color: Colors.blue),
                       // validator: Validator.email,
                       textInputType: TextInputType.emailAddress,
                     ),

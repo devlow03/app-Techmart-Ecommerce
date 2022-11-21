@@ -86,6 +86,7 @@ class _CreateInfoScreenState extends State<CreateInfoScreen> {
     return Scaffold(
         backgroundColor: Colors.grey.shade100,
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           elevation: 0.0,
           backgroundColor: Colors.grey.shade100,
 
@@ -118,7 +119,7 @@ class _CreateInfoScreenState extends State<CreateInfoScreen> {
                     showPhotoOptions();
 
                   },
-                  child: Text("Đổi ảnh đại diện",
+                  child: Text("Chọn ảnh đại diện",
                     style: TextStyle(
                         color: Colors.blue
                     ),

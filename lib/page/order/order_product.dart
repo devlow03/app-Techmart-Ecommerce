@@ -953,7 +953,7 @@ class _OrderProductState extends State<OrderProduct> {
                                       height: 50,
                                       child: ElevatedButton(
                                           onPressed: () async {
-                                            Get.offAll(IndexScreen());
+                                            Get.offAll(MainPage());
                                           },
                                           child: Text("Quay lại trang chủ")),
                                     ),
@@ -1188,7 +1188,7 @@ class _OrderProductState extends State<OrderProduct> {
                                          height: 50,
                                          child: ElevatedButton(
                                              onPressed: () async {
-                                               Get.offAll(IndexScreen());
+                                               Get.offAll(MainPage());
                                              },
                                              child: Text("Quay lại trang chủ")),
                                        ),

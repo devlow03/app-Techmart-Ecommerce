@@ -882,8 +882,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         ),
                                         SizedBox(height: 10,),
                                         Visibility(
-                                          visible: snaphot.data?.comment?[index].img?.length!='',
-                                          replacement: Text(''),
+                                          visible: snaphot.data?.comment?[index].img?.length!=0,
                                           child: Row(
                                             children: [
                                               Image.network(snaphot.data?.comment?[index].img??'',

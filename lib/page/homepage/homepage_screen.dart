@@ -12,16 +12,15 @@ import 'package:smart_store/page/all_products/all_product_screen.dart';
 import 'package:smart_store/page/product_detail/product_detail_screen.dart';
 import 'package:smart_store/api/request/api.dart';
 import 'package:smart_store/page/profile/signin/sigin_screen.dart';
-import 'package:smart_store/page/search_products/search_screen.dart';
+
 import 'package:smart_store/widget/global_product.dart';
 import 'package:get/get.dart';
 import 'package:smart_store/widget/global_webview.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-
-import '../../api/response/banner_response.dart';
+import '../../api/response/Banner_res.dart';
+import '../../api/response/Category_res.dart';
 import '../../api/response/cart_response.dart';
-import '../../api/response/category_product_response.dart';
-import '../../api/response/category_response.dart';
+import '../../api/response/prod_category_res.dart';
 import '../cart/cart_screen.dart';
 import '../profile/profile_screen.dart';
 import '../search_page/search_page.dart';
@@ -48,6 +47,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
   ];
   int activeIndex = 0;
   TextEditingController nameController = TextEditingController();
+  String host = "https://smartstore.khanhnhat.top";
   @override
   String? userID;
 
@@ -195,7 +195,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
           },
           child: ListView(
             children: [
-              FutureBuilder<BannerResponse?>(
+              FutureBuilder<BannerRes?>(
                 future: getBanner(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
@@ -205,7 +205,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
                           alignment: Alignment.bottomCenter,
                           children: [
                             CarouselSlider.builder(
-                              itemCount: snapshot.data?.banner?.length ?? 0,
+                              itemCount: snapshot.data?.data?.length ?? 0,
                               options: CarouselOptions(
                                   enlargeCenterPage: true,
                                   aspectRatio: 14 / 5,
@@ -226,9 +226,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
                                 return Container(
                                   margin: EdgeInsets.symmetric(horizontal: 1),
                                   child: Image.network(
-                                    snapshot.data?.banner?[index]
-                                            .urlBannerImg ??
-                                        '',
+                                    snapshot.data?.data?[index].urlBannerImg??'',
                                     width:
                                         MediaQuery.of(context).size.width,
 
@@ -240,7 +238,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
                             Positioned(
                                 bottom: 10,
                                 child: AnimatedSmoothIndicator(
-                                  count: snapshot.data?.banner?.length ?? 0,
+                                  count: snapshot.data?.data?.length ?? 0,
                                   activeIndex: activeIndex,
                                   effect: ExpandingDotsEffect(
                                       dotWidth: 6,
@@ -316,7 +314,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
                           Positioned(
                               bottom: 10,
                               child: AnimatedSmoothIndicator(
-                                count: snapshot.data?.banner?.length ?? 0,
+                                count: snapshot.data?.data?.length ?? 0,
                                 activeIndex: activeIndex,
                                 effect: ExpandingDotsEffect(
                                     dotWidth: 6,
@@ -355,7 +353,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
                   );
                 },
               ),
-              FutureBuilder<CategoryResponse?>(
+              FutureBuilder<CategoryRes?>(
                 future: getCategory(),
                 builder: (context,snapshot){
                   if(snapshot.hasData) {
@@ -376,7 +374,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
                                   onTap: () {
                                     Get.to(AllProductsScreen(
                                       id_category: snapshot.data
-                                          ?.category?[index].idCategory,
+                                          ?.category?[index].idCategory.toString(),
                                       data2: snapshot.data?.category?[index],
                                     ));
                                   },
@@ -400,8 +398,8 @@ class _HomePageScreenState extends State<HomePageScreen> {
                                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                                             children: [
                                               Image.network(
-                                                snapshot.data?.category?[index]
-                                                    .image ?? '',
+                                               snapshot.data?.category?[index]
+                                              .image ?? '',
 
                                                 width: MediaQuery
                                                     .of(context)
@@ -471,7 +469,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
                                       InkWell(
                                           onTap: () {
                                             Get.to(AllProductsScreen(
-                                              id_category: snapshot.data?.category?[index].idCategory,
+                                              id_category: snapshot.data?.category?[index].idCategory.toString(),
                                               data2: snapshot.data?.category?[index],
                                             ));
                                           },
@@ -485,7 +483,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
                                     ],
                                   ),
                                 ),
-                                FutureBuilder<CategoryProductResponse?>(
+                                FutureBuilder<ProdCategoryRes?>(
                                   future: getCategoryProduct(snapshot.data?.category?[index].idCategory),
                                   builder: (
                                       context,
@@ -502,12 +500,12 @@ class _HomePageScreenState extends State<HomePageScreen> {
                                               shrinkWrap: true,
                                               itemCount: (snapshot
                                                   .data
-                                                  ?.productsCategory
+                                                  ?.prodCategory
                                                   ?.length ??
                                                   0) >
                                                   4
                                                   ? 4
-                                                  : (snapshot.data?.productsCategory
+                                                  : (snapshot.data?.prodCategory
                                                   ?.length ??
                                                   0),
                                               physics: NeverScrollableScrollPhysics(),
@@ -515,29 +513,29 @@ class _HomePageScreenState extends State<HomePageScreen> {
                                                 return InkWell(
                                                   onTap: () {
                                                     Get.to(ProductDetailScreen(
-                                                      idCategory: snapshot.data?.productsCategory?[index].idCategory,
-                                                      id: snapshot.data?.productsCategory?[index].id,
-                                                      name: snapshot.data?.productsCategory?[index].name,
-                                                      price: snapshot.data?.productsCategory?[index].price,
-                                                      descript: snapshot.data?.productsCategory?[index].descript,
-                                                      image: snapshot.data?.productsCategory?[index].imgLink,
+                                                      idCategory: snapshot.data?.prodCategory?[index].idCategory.toString(),
+                                                      id: snapshot.data?.prodCategory?[index].id.toString(),
+                                                      name: snapshot.data?.prodCategory?[index].name.toString(),
+                                                      price: snapshot.data?.prodCategory?[index].price.toString(),
+                                                      descript: snapshot.data?.prodCategory?[index].descript,
+                                                      image: snapshot.data?.prodCategory?[index].imgLink,
 
                                                     ));
                                                   },
                                                   child: GlobalProduct(
                                                     imageLink: snapshot
                                                         .data
-                                                        ?.productsCategory?[index]
+                                                        ?.prodCategory?[index]
                                                         .imgLink,
                                                     shortDes: snapshot
                                                         .data
-                                                        ?.productsCategory?[index]
+                                                        ?.prodCategory?[index]
                                                         .shortDes,
                                                     // price:NumberFormat("###,###.# đ").format(snapshot.data?.products?[index].price),
                                                     price:
-                                                    '${snapshot.data?.productsCategory?[index].price ?? ''}',
+                                                    '${snapshot.data?.prodCategory?[index].price ?? ''}',
                                                     nameProduct:
-                                                    '${snapshot.data?.productsCategory?[index].name}',
+                                                    '${snapshot.data?.prodCategory?[index].name}',
                                                     numStar: '5.0',
                                                   ),
                                                 );

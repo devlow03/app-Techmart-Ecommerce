@@ -1,12 +1,5 @@
-import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:smart_store/splash_screen/splash_screen.dart';
-
 import 'page/index_screen.dart';
 // SharedPreferences? pre;
 void main() async {

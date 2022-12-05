@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:smart_store/api/response/comment_response.dart';
+import 'package:smart_store/api/response/prodslider_res.dart';
 import 'package:smart_store/api/response/search_response.dart';
 import 'package:smart_store/api/response/slider_product_response.dart';
 import 'package:smart_store/page/profile/signin/sigin_screen.dart';
@@ -16,12 +17,11 @@ import 'package:smart_store/page/search_page/search_page.dart';
 import 'package:smart_store/widget/global_product.dart';
 import 'package:smart_store/widget/photo_view.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-
 import '../../api/request/api.dart';
 import '../../api/response/cart_response.dart';
-import '../../api/response/category_product_response.dart';
 import '../../api/response/favorite_response.dart';
 import '../../api/response/get_info.dart';
+import '../../api/response/prod_category_res.dart';
 import '../all_products/all_product_screen.dart';
 import '../cart/cart_screen.dart';
 import '../order/order_product.dart';
@@ -214,7 +214,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         },
         child: ListView(
           children: [
-            FutureBuilder<SliderProductResponse?>(
+            FutureBuilder<ProdsliderRes?>(
               future: getSliderProduct(widget.id),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
@@ -990,7 +990,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ],
               ),
             ),
-            FutureBuilder<CategoryProductResponse?>(
+            FutureBuilder<ProdCategoryRes?>(
                 future: getCategoryProduct(widget.idCategory),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
@@ -1007,11 +1007,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 Get.back();
                                 Get.to(ProductDetailScreen(
                                   idCategory: widget.idCategory,
-                                  id: snapshot.data?.productsCategory?[index].id,
-                                  name: snapshot.data?.productsCategory?[index].name,
-                                  price: snapshot.data?.productsCategory?[index].price,
-                                  descript: snapshot.data?.productsCategory?[index].descript,
-                                  image: snapshot.data?.productsCategory?[index].imgLink,
+                                  id: snapshot.data?.prodCategory?[index].id.toString(),
+                                  name: snapshot.data?.prodCategory?[index].name,
+                                  price: snapshot.data?.prodCategory?[index].price.toString(),
+                                  descript: snapshot.data?.prodCategory?[index].descript,
+                                  image: snapshot.data?.prodCategory?[index].imgLink,
                                 ));
                               },
                               child: Padding(
@@ -1019,14 +1019,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     const EdgeInsets.symmetric(horizontal: 10),
                                 child: GlobalProduct(
                                   imageLink: snapshot
-                                      .data?.productsCategory?[index].imgLink,
+                                      .data?.prodCategory?[index].imgLink,
                                   shortDes: snapshot
-                                      .data?.productsCategory?[index].shortDes,
+                                      .data?.prodCategory?[index].shortDes,
                                   // price:NumberFormat("###,###.# đ").format(snapshot.data?.products?[index].price),
                                   price:
-                                      '${snapshot.data?.productsCategory?[index].price ?? ''}',
+                                      '${snapshot.data?.prodCategory?[index].price ?? ''}',
                                   nameProduct:
-                                      '${snapshot.data?.productsCategory?[index].name}',
+                                      '${snapshot.data?.prodCategory?[index].name}',
                                   numStar: '5.0',
                                 ),
                               ),

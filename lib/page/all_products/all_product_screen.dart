@@ -5,15 +5,14 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:smart_store/api/response/category_response.dart';
 import 'package:smart_store/page/product_detail/product_detail_screen.dart';
 import 'package:smart_store/api/request/api.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import '../../api/response/banner_response.dart';
+import '../../api/response/Banner_res.dart';
+import '../../api/response/Category_res.dart';
 import '../../api/response/cart_response.dart';
-import '../../api/response/category_product_response.dart';
+import '../../api/response/prod_category_res.dart';
 import '../../widget/global_product.dart';
-import '../../widget/global_webview.dart';
 import '../cart/cart_screen.dart';
 import '../profile/signin/sigin_screen.dart';
 import '../search_page/search_page.dart';
@@ -23,7 +22,7 @@ class AllProductsScreen extends StatefulWidget {
   // final Category? initProduct;
   // final String? id_mobile;
   final String? id_category;
-  final ProductsCategory? data;
+  final ProdCategory? data;
   final Category?data2;
   const AllProductsScreen({Key? key,this.id_category, this.data, this.data2, }) : super(key: key);
   @override
@@ -167,7 +166,7 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
         },
         child: ListView(
           children: [
-            FutureBuilder<BannerResponse?>(
+            FutureBuilder<BannerRes?>(
               future: getBanner(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
@@ -177,7 +176,7 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                         alignment: Alignment.bottomCenter,
                         children: [
                           CarouselSlider.builder(
-                            itemCount: snapshot.data?.banner?.length ?? 0,
+                            itemCount: snapshot.data?.data?.length ?? 0,
                             options: CarouselOptions(
 
                                 enlargeCenterPage: true,
@@ -198,17 +197,12 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                             itemBuilder: (context, index, realIndex) {
                               return InkWell(
                                 onTap: () {
-                                  Get.to(GlobalWebview(
-                                    linkWeb:
-                                    snapshot.data?.banner?[index].urlWeb ??
-                                        '',
-                                    tittleWeb: 'Banner',
-                                  ));
+
                                 },
                                 child: Container(
                                   margin: EdgeInsets.symmetric(horizontal: 3),
                                   child: Image.network(
-                                    snapshot.data?.banner?[index]
+                                    snapshot.data?.data?[index]
                                         .urlBannerImg ??
                                         '',
                                     width:
@@ -223,7 +217,7 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                           Positioned(
                               bottom: 10,
                               child: AnimatedSmoothIndicator(
-                                count: snapshot.data?.banner?.length ?? 0,
+                                count: snapshot.data?.data?.length ?? 0,
                                 activeIndex: activeIndex,
                                 effect: ExpandingDotsEffect(
                                     dotWidth: 6,
@@ -282,7 +276,7 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                         Positioned(
                             bottom: 10,
                             child: AnimatedSmoothIndicator(
-                              count: snapshot.data?.banner?.length ?? 0,
+                              count: snapshot.data?.data?.length ?? 0,
                               activeIndex: activeIndex,
                               effect: ExpandingDotsEffect(
                                   dotWidth: 6,
@@ -308,7 +302,7 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                 );
               },
             ),
-            FutureBuilder<CategoryProductResponse?>(
+            FutureBuilder<ProdCategoryRes?>(
                 future: getCategoryProduct(widget.id_category),
                 builder: (context,snapshot){
                   if (snapshot.hasData) {
@@ -327,26 +321,26 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                             shrinkWrap: true,
                             padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                             physics: NeverScrollableScrollPhysics(),
-                            itemCount: snapshot.data?.productsCategory?.length ?? 0,
+                            itemCount: snapshot.data?.prodCategory?.length ?? 0,
                             itemBuilder: (context, index) {
                               return  InkWell(
                                 onTap: (){
                                   Get.to(ProductDetailScreen(
-                                    idCategory: snapshot.data?.productsCategory?[index].idCategory.toString(),
-                                    id: snapshot.data?.productsCategory?[index].id,
-                                    name: snapshot.data?.productsCategory?[index].name,
-                                    price: snapshot.data?.productsCategory?[index].price,
-                                    descript: snapshot.data?.productsCategory?[index].descript,
-                                    image: snapshot.data?.productsCategory?[index].imgLink,
+                                    idCategory: snapshot.data?.prodCategory?[index].idCategory.toString(),
+                                    id: snapshot.data?.prodCategory?[index].id.toString(),
+                                    name: snapshot.data?.prodCategory?[index].name,
+                                    price: snapshot.data?.prodCategory?[index].price.toString(),
+                                    descript: snapshot.data?.prodCategory?[index].descript,
+                                    image: snapshot.data?.prodCategory?[index].imgLink,
                                   ));
                                 },
                                 child: GlobalProduct(
                                   imageLink:
-                                  snapshot.data?.productsCategory?[index].imgLink,
-                                  shortDes: snapshot.data?.productsCategory?[index].shortDes,
+                                  snapshot.data?.prodCategory?[index].imgLink,
+                                  shortDes: snapshot.data?.prodCategory?[index].shortDes,
                                   // price:NumberFormat("###,###.# đ").format(snapshot.data?.products?[index].price),
-                                  price: '${snapshot.data?.productsCategory?[index].price??''}',
-                                  nameProduct: '${snapshot.data?.productsCategory?[index].name}',
+                                  price: '${snapshot.data?.prodCategory?[index].price??''}',
+                                  nameProduct: '${snapshot.data?.prodCategory?[index].name}',
                                   numStar: '5.0',
                                 ),
                               );

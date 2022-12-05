@@ -8,7 +8,6 @@ import 'package:smart_store/api/response/favorite_response.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../../api/request/api.dart';
-import '../../api/response/banner_response.dart';
 import '../../api/response/cart_response.dart';
 import '../../widget/global_product.dart';
 import '../../widget/global_webview.dart';

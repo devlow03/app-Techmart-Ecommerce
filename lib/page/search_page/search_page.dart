@@ -5,9 +5,10 @@ import 'package:intl/intl.dart';
 
 import 'package:smart_store/api/response/search_response.dart';
 import 'package:smart_store/page/product_detail/product_detail_screen.dart';
-import 'package:smart_store/page/search_products/search_screen.dart';
+
 
 import '../../api/request/api.dart';
+import '../../api/response/search_res.dart';
 import '../../widget/global_product.dart';
 
 class SearchPage extends SearchDelegate{
@@ -44,7 +45,7 @@ class SearchPage extends SearchDelegate{
   @override
   Widget buildSuggestions(BuildContext context) {
   if(query.length>0){
-    return FutureBuilder<SearchResponse?>(
+    return FutureBuilder<SearchRes?>(
       future: getSearch(query),
       builder: (context,snapshot){
 
@@ -57,10 +58,10 @@ class SearchPage extends SearchDelegate{
                 InkWell(
                   onTap: (){
                     Get.to(ProductDetailScreen(
-                      idCategory: snapshot.data?.searchProducts?[index].idCategory,
-                      id: snapshot.data?.searchProducts?[index].id,
+                      idCategory: snapshot.data?.searchProducts?[index].idCategory.toString(),
+                      id: snapshot.data?.searchProducts?[index].id.toString(),
                       name: snapshot.data?.searchProducts?[index].name,
-                      price: snapshot.data?.searchProducts?[index].price,
+                      price: snapshot.data?.searchProducts?[index].price.toString(),
                       image:snapshot.data?.searchProducts?[index].imgLink,
                       descript: snapshot.data?.searchProducts?[index].descript,
                     ));
@@ -70,7 +71,7 @@ class SearchPage extends SearchDelegate{
                       leading: Image.network(snapshot.data?.searchProducts?[index].imgLink??''),
                       title:Text(snapshot.data?.searchProducts?[index].name??'',style:
                       TextStyle(fontSize: 12),),
-                      subtitle: Text(NumberFormat.simpleCurrency(locale: 'vi').format(double.parse(snapshot.data?.searchProducts?[index].price??'')),style: TextStyle(color: Colors.red),),
+                      subtitle: Text(NumberFormat.simpleCurrency(locale: 'vi').format(double.parse(snapshot.data?.searchProducts?[index].price.toString()??'')),style: TextStyle(color: Colors.red),),
                       trailing: SvgPicture.asset("assets/images/arrow-up-left.svg",
                       )
                   ),
@@ -98,7 +99,7 @@ class SearchPage extends SearchDelegate{
   }
   @override
   Widget buildResults(BuildContext context) {
-    return FutureBuilder<SearchResponse?>(
+    return FutureBuilder<SearchRes?>(
       future: getSearch(query),
       builder: (context,snapshot){
         if (snapshot.hasData) {
@@ -116,10 +117,10 @@ class SearchPage extends SearchDelegate{
                 return InkWell(
                   onTap: () {
                     Get.to(ProductDetailScreen(
-                      idCategory: snapshot.data?.searchProducts?[index].idCategory,
-                      id: snapshot.data?.searchProducts?[index].id,
+                      idCategory: snapshot.data?.searchProducts?[index].idCategory.toString(),
+                      id: snapshot.data?.searchProducts?[index].toString(),
                       name: snapshot.data?.searchProducts?[index].name,
-                      price: snapshot.data?.searchProducts?[index].price,
+                      price: snapshot.data?.searchProducts?[index].price.toString(),
                       image:snapshot.data?.searchProducts?[index].imgLink,
                       descript: snapshot.data?.searchProducts?[index].descript,
                     ));

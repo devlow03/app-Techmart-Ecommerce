@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:get/get.dart';
 import 'package:image_downloader/image_downloader.dart';
+import 'package:smart_store/api/response/prodslider_res.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../api/request/api.dart';
@@ -39,7 +40,7 @@ class _PhotoViewState extends State<PhotoView> {
           icon: Icon(Icons.arrow_back,color: Colors.white,),
         ),
       ),
-      body: FutureBuilder<SliderProductResponse?>(
+      body: FutureBuilder<ProdsliderRes?>(
         future: getSliderProduct(widget.id),
         builder: (context, snapshot) {
           if (snapshot.hasData) {

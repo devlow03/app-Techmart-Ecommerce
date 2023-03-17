@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
-
 import '../../api/request/api.dart';
-import '../../api/response/info_order_response.dart';
+import '../../api/response/info_order_rsp.dart';
 import 'order_detail_screen.dart';
 class SuccessOrderScreen extends StatefulWidget {
   final String userID;
@@ -21,7 +20,7 @@ class _SuccessOrderScreenState extends State<SuccessOrderScreen> {
       children: [
         SizedBox(height: 20,),
         // Text(userID??''),
-        FutureBuilder<InfoOrderResponse?>(
+        FutureBuilder<InfoOrderRsp?>(
             future: infoOrder(widget.userID),
             builder: (context,snapshot){
               if(snapshot.hasData){
@@ -33,7 +32,8 @@ class _SuccessOrderScreenState extends State<SuccessOrderScreen> {
                     return InkWell(
                       onTap: (){
                         Get.to(OrderDetailScreen(
-                          data: snapshot.data?.order?[index],
+                          data: snapshot.data,
+                          index: index,
                         ));
                       },
                       child: Container(
@@ -91,7 +91,7 @@ class _SuccessOrderScreenState extends State<SuccessOrderScreen> {
                                         SizedBox(
                                           height: 15,
                                         ),
-                                        Text('${NumberFormat.simpleCurrency(locale: 'vi').format(int.parse(snapshot.data?.order?[index].price ?? ''))}',
+                                        Text('${NumberFormat.simpleCurrency(locale: 'vi').format(int.parse(snapshot.data?.order?[index].price.toString() ?? ''))}',
                                           style:TextStyle(
                                               fontSize: 12
                                           ) ,),
@@ -104,7 +104,7 @@ class _SuccessOrderScreenState extends State<SuccessOrderScreen> {
                                               style: DefaultTextStyle.of(context).style,
                                               children: <TextSpan>[
                                                 TextSpan(
-                                                    text:'${NumberFormat.simpleCurrency(locale: 'vi').format(int.parse(snapshot.data?.order?[index].price?? '')*int.parse(snapshot.data?.order?[index].amount?? ''))}',
+                                                    text:'${NumberFormat.simpleCurrency(locale: 'vi').format(int.parse(snapshot.data?.order?[index].price.toString()?? '')*int.parse(snapshot.data?.order?[index].amount.toString()?? ''))}',
                                                     style: TextStyle(color: Colors.redAccent)
                                                 )
 
@@ -176,7 +176,8 @@ class _SuccessOrderScreenState extends State<SuccessOrderScreen> {
                   return InkWell(
                     onTap: (){
                       Get.to(OrderDetailScreen(
-                        data: snapshot.data?.order?[index],
+                        data: snapshot.data,
+                        index: index,
                       ));
                     },
                     child: Container(

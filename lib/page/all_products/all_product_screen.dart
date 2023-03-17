@@ -9,6 +9,7 @@ import 'package:smart_store/page/product_detail/product_detail_screen.dart';
 import 'package:smart_store/api/request/api.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../api/response/Banner_res.dart';
+import '../../api/response/Cart_res.dart';
 import '../../api/response/Category_res.dart';
 import '../../api/response/cart_response.dart';
 import '../../api/response/prod_category_res.dart';
@@ -32,7 +33,7 @@ class AllProductsScreen extends StatefulWidget {
 class _AllProductsScreenState extends State<AllProductsScreen> {
   @override
   int activeIndex = 0;
-  String? userID;
+  String? token;
   void initState() {
     super.initState();
     setState(() {
@@ -42,7 +43,7 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
   getUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      userID = prefs.getString('userID');
+      token = prefs.getString('token');
     });
   }
   Widget build(BuildContext context) {
@@ -96,8 +97,8 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
           ),
         ),
         actions: [
-          FutureBuilder<CartResponse?>(
-            future: getCart(userID),
+          FutureBuilder<CartRes?>(
+            future: getCart(token),
             builder: (context,snapshot){
               if(snapshot.connectionState == ConnectionState.done){
                 return Stack(
@@ -107,7 +108,7 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                       padding: const EdgeInsets.fromLTRB(0, 8, 16, 8.0),
                       child: IconButton(
                           onPressed: () {
-                            userID!= null ? Get.to(CartScreen(userID: int.parse(userID.toString()))):
+                            token!= null ? Get.to(CartScreen(token: token)):
                             Get.to(SignInScreen());
 
                           },
@@ -138,7 +139,7 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                 padding: const EdgeInsets.fromLTRB(0, 8, 16, 8.0),
                 child: IconButton(
                     onPressed: () {
-                      Get.to(CartScreen(userID: int.parse(userID.toString())));
+                      Get.to(CartScreen(token:token));
                       // setState((){
                       //   coutCart = snapshot.data?.cart?.length.toString()??'';
                       // });
@@ -157,7 +158,7 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
         color: Colors.black,
         strokeWidth: 3,
         onRefresh: ()async{
-          await getCart(userID).then((value){
+          await getCart(token).then((value){
             setState((){});
           });
           await getCategoryProduct(widget.id_category).then((value) => {

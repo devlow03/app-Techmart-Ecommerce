@@ -90,9 +90,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             emailControl.text, passControl.text).then((value) async {
                           SharedPreferences prefs = await SharedPreferences.getInstance();
                           setState((){
-                            String? userID = value?.userId;
-                            prefs.setString('userID', userID!);
-                            Get.to(CreateInfoScreen(userID: userID,));
+                            String? token = value?.jwt;
+                            prefs.setString('token', token!);
+                            Get.to(CreateInfoScreen(token: token,));
 
                           });
                         });

@@ -1,22 +1,20 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_store/api/request/api.dart';
-import 'package:smart_store/page/profile/profile_detail/update_info..dart';
-
 import '../../../api/response/city_response.dart';
 import '../../../api/response/district_response.dart';
-import '../../../api/response/get_info.dart';
+import '../../../api/response/user.dart';
 import '../../../api/response/ward_response.dart';
 import '../../../widget/global_textfield.dart';
 
 class ProfileDetailScreen extends StatefulWidget {
-  final String? userID;
-  const ProfileDetailScreen({Key? key, this.userID}) : super(key: key);
+  final String? token;
+  final User? userData;
+  const ProfileDetailScreen({Key? key, this.token, this.userData}) : super(key: key);
 
   @override
   State<ProfileDetailScreen> createState() => _ProfileDetailScreenState();
@@ -32,82 +30,72 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
   String? disChosse;
   String? wardChosse;
   int itemCount = 1;
-  refreshData(){
-    setState((){});
+  refreshData() {
+    setState(() {});
   }
-  void initState(){
-    setState((){
+
+  void initState() {
+    setState(() {
       getUser();
     });
   }
-  File? image;
-  Future selectImage(ImageSource source) async{
 
-    final  selectImg =   await ImagePicker().pickImage(source: source);
-    if(selectImg != null){
+  File? image;
+  Future selectImage(ImageSource source) async {
+    final selectImg = await ImagePicker().pickImage(source: source);
+    if (selectImg != null) {
       File convertFile = File(selectImg.path);
 
       setState(() {
-
         image = convertFile;
-
-
-
       });
     }
-
   }
-  void showPhotoOptions(){
-    showDialog(context: context, builder: (context){
-      return AlertDialog(
-        title: Text("Tải ảnh hồ sơ lên"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
 
-              onTap: ()async{
-                // Navigator.pop(context);
-                await selectImage(ImageSource.gallery);
-                Get.back();
-                await updateAvatar(image, widget.userID).then((value){
-                  setState((){});
-                });
-
-
-              },
-              leading: Icon(Icons.photo_album_rounded),
-              title: Text('Chọn từ thư viện'),
+  void showPhotoOptions() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Tải ảnh hồ sơ lên"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  onTap: () async {
+                    // Navigator.pop(context);
+                    await selectImage(ImageSource.gallery);
+                    Get.back();
+                    await updateAvatar(image, widget.token).then((value) {
+                      setState(() {});
+                    });
+                  },
+                  leading: Icon(Icons.photo_album_rounded),
+                  title: Text('Chọn từ thư viện'),
+                ),
+                ListTile(
+                  onTap: () async {
+                    await selectImage(ImageSource.camera);
+                    Get.back();
+                    await updateAvatar(image, widget.token).then((value) {
+                      setState(() {});
+                    });
+                  },
+                  leading: Icon(Icons.camera_alt),
+                  title: Text('Chụp ảnh'),
+                ),
+              ],
             ),
-
-            ListTile(
-              onTap:()async{
-                await selectImage(ImageSource.camera);
-                Get.back();
-                await updateAvatar(image, widget.userID).then((value){
-                  setState((){});
-                });
-
-              },
-              leading: Icon(Icons.camera_alt),
-              title: Text('Chụp ảnh'),
-            ),
-          ],
-        ),
-
-
-      );
-    });
+          );
+        });
   }
-  Future getUser()async{
-    await getInfo(widget.userID).then((value){
-      fullName.text = value?.user?.fullname??'';
-      cityCode = value?.user?.city??'';
-      disCode = value?.user?.district??'';
-      wardCode = value?.user?.ward??'';
-      phone.text = value?.user?.phone??'';
 
-    });
+  Future getUser() async {
+    cityCode = widget.userData?.city.toString();
+    disCode = widget.userData?.district.toString();
+    wardCode = widget.userData?.ward.toString();
+    fullName.text =  widget.userData?.fullname.toString()??'';
+    phone.text =  widget.userData?.phone.toString()??'';
   }
 
   @override
@@ -119,8 +107,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
         backgroundColor: Colors.grey.shade200,
         leading: IconButton(
           onPressed: () {
-            Navigator.pop(context,'refresh');
-
+            Navigator.pop(context, 'refresh');
           },
           icon: Icon(Icons.arrow_back),
           color: Colors.black,
@@ -133,22 +120,23 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
         ),
       ),
       body: RefreshIndicator(
-        onRefresh: ()async{
-          setState((){});
+        onRefresh: () async {
+          setState(() {});
         },
         child: ListView(
           children: [
-            FutureBuilder<GetInfo?>(
-              future: getInfo(widget.userID),
+            FutureBuilder<User?>(
+              future: getInfo(widget.token),
               builder: (context, snapshot) {
                 return Column(
                   children: [
-
                     Center(
                       child: CircleAvatar(
-                        backgroundImage:
-                          image!=null?FileImage(image!) as ImageProvider:NetworkImage(
-                            snapshot.data?.user?.avatar??''),
+                        backgroundImage: image != null
+                            ? FileImage(image!) as ImageProvider
+                            : NetworkImage(
+                                'https://smartstore.khanhnhat.top${snapshot.data?.avatar ?? ''}',
+                              ),
                         radius: 35,
                         backgroundColor: Colors.white,
                         // child: Image.asset(
@@ -158,15 +146,12 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                       // ),
                     ),
                     TextButton(
-                        onPressed: ()async{
+                        onPressed: () async {
                           showPhotoOptions();
-
                         },
-                        child: Text("Đổi ảnh đại diện",
-                        style: TextStyle(
-                          color: Colors.blue
-                        ),
-
+                        child: Text(
+                          "Đổi ảnh đại diện",
+                          style: TextStyle(color: Colors.blue),
                         )),
                     Center(
                       child: Container(
@@ -178,11 +163,11 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                               padding: EdgeInsets.all(15),
                               decoration: BoxDecoration(
                                   color: Colors.white,
-                                // border: Border.all(color: Colors.grey.shade500),
-                                borderRadius: BorderRadius.circular(10)
-                                  ),
+                                  // border: Border.all(color: Colors.grey.shade500),
+                                  borderRadius: BorderRadius.circular(10)),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Text(
@@ -191,7 +176,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                     ),
                                   ),
                                   Text(
-                                    'K${widget.userID}H ',
+                                    'K${snapshot.data?.userID}H ',
                                     // overflow: TextOverflow.ellipsis,
                                     // maxLines: 1,
                                     style: TextStyle(fontSize: 15),
@@ -205,18 +190,19 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                             GlobalTextField(
                               title: 'Họ tên',
                               hint: 'Nhập họ tên',
-                              controller:fullName,
-                              contentPadding: EdgeInsets.symmetric(vertical: 10,horizontal: 10),
-
+                              controller: fullName,
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 10, horizontal: 10),
                             ),
-                            SizedBox(height: 20,),
+                            SizedBox(
+                              height: 20,
+                            ),
                             Row(
                               children: [
                                 Text(
                                   'Tỉnh / Thành phố',
                                   style: TextStyle(
                                     fontSize: 12,
-
                                   ),
                                 ),
                               ],
@@ -235,19 +221,24 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                       decoration: InputDecoration(
                                           contentPadding: EdgeInsets.all(8),
                                           border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                               borderSide: BorderSide(
                                                   color: Colors.transparent,
                                                   width: 1)),
                                           focusedBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
-                                                color: Colors.transparent, width: 1),
-                                            borderRadius: BorderRadius.circular(10),
+                                                color: Colors.transparent,
+                                                width: 1),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
                                           ),
                                           enabledBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
-                                                color: Colors.transparent, width: 1),
-                                            borderRadius: BorderRadius.circular(10),
+                                                color: Colors.transparent,
+                                                width: 1),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
                                           ),
                                           filled: true,
                                           fillColor: Colors.white),
@@ -256,7 +247,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                       items: snapshot.data?.results?.map((e) {
                                         return DropdownMenuItem<String>(
                                             value: e.code,
-                                            onTap: (){
+                                            onTap: () {
                                               cityCode = null;
                                               disChosse = null;
                                               disCode = null;
@@ -266,20 +257,19 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                             },
                                             child: Text(e.name ?? ''));
                                       }).toList(),
-
-
-                                      onChanged: (newValue) {
+                                      onChanged: (newCity) {
                                         setState(() {
-                                          cityChosse = newValue;
+                                          cityChosse = newCity;
                                           cityCode == null;
-
-
                                         });
                                       },
                                       menuMaxHeight:
-                                      MediaQuery.of(context).size.height * .9,
+                                          MediaQuery.of(context).size.height *
+                                              .9,
                                       isDense: true,
-                                      value: cityCode!=null?cityCode:cityChosse,
+                                      value: cityCode != null
+                                          ? cityCode
+                                          : cityChosse,
                                       isExpanded: true,
                                     ),
                                   ],
@@ -295,7 +285,6 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                   'Quận / Huyện',
                                   style: TextStyle(
                                     fontSize: 12,
-
                                   ),
                                 ),
                               ],
@@ -304,7 +293,8 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                               height: 8,
                             ),
                             FutureBuilder<DistrictResponse?>(
-                              future: getDistrict(cityCode!=null?cityCode:cityChosse),
+                              future: getDistrict(
+                                  cityCode != null ? cityCode : cityChosse),
                               builder: (context, snapshot) {
                                 return Column(
                                   children: [
@@ -314,38 +304,34 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                       decoration: InputDecoration(
                                           contentPadding: EdgeInsets.all(8),
                                           border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                               borderSide: BorderSide(
                                                   color: Colors.transparent,
-                                                  width: 1
-                                              )
-                                          ),
+                                                  width: 1)),
                                           focusedBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
                                                 color: Colors.transparent,
-                                                width: 1
-                                            ),
-                                            borderRadius: BorderRadius.circular(10),
+                                                width: 1),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
                                           ),
                                           enabledBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
                                                 color: Colors.transparent,
-                                                width: 1
-                                            ),
-
-                                            borderRadius: BorderRadius.circular(10),
-
+                                                width: 1),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
                                           ),
                                           filled: true,
-                                          fillColor: Colors.white
-                                      ),
+                                          fillColor: Colors.white),
                                       elevation: 1,
                                       hint: Text('Chọn quận/huyện'),
                                       items: snapshot.data?.results?.map((e) {
                                         return DropdownMenuItem<String>(
                                             value: e.code,
-                                            onTap: (){
-                                              setState((){
+                                            onTap: () {
+                                              setState(() {
                                                 disCode = null;
                                                 wardCode = null;
                                               });
@@ -358,17 +344,17 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                       //     disCode = null;
                                       //   });
                                       // },
-                                      onChanged: (Value) {
+                                      onChanged: (newDis) {
                                         setState(() {
-                                          disChosse = Value;
+                                          disChosse = newDis;
                                           disCode = null;
                                           wardCode = null;
                                           wardChosse = null;
-
                                         });
                                       },
 
-                                      value: disCode!=null?disCode:disChosse,
+                                      value:
+                                          disCode != null ? disCode : disChosse,
                                       isExpanded: true,
                                     ),
                                   ],
@@ -384,7 +370,6 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                   'Phường / Xã',
                                   style: TextStyle(
                                     fontSize: 12,
-
                                   ),
                                 ),
                               ],
@@ -393,7 +378,8 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                               height: 8,
                             ),
                             FutureBuilder<WardResponse?>(
-                              future: getWard(disCode!=null?disCode:disChosse),
+                              future: getWard(
+                                  disCode != null ? disCode : disChosse),
                               builder: (context, snapshot) {
                                 return Column(
                                   children: [
@@ -403,61 +389,56 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                       decoration: InputDecoration(
                                           contentPadding: EdgeInsets.all(8),
                                           border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                               borderSide: BorderSide(
                                                   color: Colors.transparent,
-                                                  width: 1
-                                              )
-                                          ),
+                                                  width: 1)),
                                           focusedBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
                                                 color: Colors.transparent,
-                                                width: 1
-                                            ),
-                                            borderRadius: BorderRadius.circular(10),
+                                                width: 1),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
                                           ),
                                           enabledBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
                                                 color: Colors.transparent,
-                                                width: 1
-                                            ),
-
-                                            borderRadius: BorderRadius.circular(10),
-
+                                                width: 1),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
                                           ),
                                           filled: true,
-                                          fillColor: Colors.white
-                                      ),
+                                          fillColor: Colors.white),
                                       elevation: 1,
                                       hint: Text('Chọn phường/xã'),
                                       items: snapshot.data?.results?.map((e) {
                                         return DropdownMenuItem<String>(
                                             value: e.code,
-                                            onTap: (){
-                                              setState((){
-
-                                                wardCode=null;
-                                                wardChosse=null;
+                                            onTap: () {
+                                              setState(() {
+                                                wardCode = null;
+                                                wardChosse = null;
                                                 // disChosse = null;
-
                                               });
                                             },
                                             child: Text(e.name ?? ''));
                                       }).toList(),
-                                      onChanged: (Value) {
+                                      onChanged: (newWard) {
                                         setState(() {
-                                          wardChosse = Value;
-                                          wardCode=null;
+                                          wardChosse = newWard;
+                                          wardCode = null;
                                         });
                                       },
-                                      value: wardCode!=null?wardCode:wardChosse,
+                                      value: wardCode != null
+                                          ? wardCode
+                                          : wardChosse,
                                       isExpanded: true,
                                     ),
                                   ],
                                 );
                               },
                             ),
-
 
                             SizedBox(
                               height: 20,
@@ -466,9 +447,9 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                             GlobalTextField(
                               title: 'Điện thoại',
                               hint: 'Nhập số điện thoại',
-                              controller:phone,
-                              contentPadding: EdgeInsets.symmetric(vertical: 10,horizontal: 10),
-
+                              controller: phone,
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 10, horizontal: 10),
                             ),
 
                             //don't delete
@@ -477,40 +458,40 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                               height: 30,
                             ),
                             Container(
-                              width: MediaQuery.of(context).size.width*.55,
+                              width: MediaQuery.of(context).size.width * .55,
                               height: 45,
                               child: ElevatedButton(
-                                  onPressed: ()async{
-                                    await postUser(
-                                        fullName.text,
-                                        cityCode!=null?cityCode:cityChosse,
-                                        disCode!=null?disCode:disChosse,
-                                        wardCode!=null?wardCode:wardChosse,
-                                        phone.text,
-                                        widget.userID
-                                    ).then((value){
-                                      setState((){
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(
-                                          backgroundColor:
-                                          Colors.blue.shade700,
-                                          content: Text(
-                                              'Cập nhật thành công'),
-                                          duration:
-                                          Duration(seconds: 2),
-                                        ));
-                                      });
+                                onPressed: () async {
+                                  await postUser(
+                                      widget.token,
+                                          fullName.text,
+                                          cityCode != null
+                                              ? cityCode
+                                              : cityChosse,
+                                          disCode != null ? disCode : disChosse,
+                                          wardCode != null
+                                              ? wardCode
+                                              : wardChosse,
+                                          phone.text
+                                          )
+                                      .then((value) {
+                                    setState(() {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                        backgroundColor: Colors.blue.shade700,
+                                        content: Text('Cập nhật thành công'),
+                                        duration: Duration(seconds: 2),
+                                      ));
                                     });
-                                  },
-                                  child: Text('Cập nhật thông tin'),
+                                  });
+                                },
+                                child: Text('Cập nhật thông tin'),
                                 style: ElevatedButton.styleFrom(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10)
-                                  ),
-                                  primary: Colors.blue.shade700
-                                ),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    primary: Colors.blue.shade700),
                               ),
-
                             ),
 
                             SizedBox(

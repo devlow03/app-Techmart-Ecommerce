@@ -7,8 +7,8 @@ import 'package:shimmer/shimmer.dart';
 import 'package:smart_store/api/request/api.dart';
 import 'package:smart_store/page/all_order/success.dart';
 
-import '../../api/response/cart_response.dart';
-import '../../api/response/info_order_response.dart';
+
+import '../../api/response/Cart_res.dart';
 import '../cart/cart_screen.dart';
 import '../profile/signin/sigin_screen.dart';
 import 'order_detail_screen.dart';
@@ -22,7 +22,7 @@ class AllOrderScreen extends StatefulWidget {
 
 class _AllOrderScreenState extends State<AllOrderScreen> {
   @override
-  String? userID;
+  String? token;
   void initState() {
     super.initState();
     setState(() {
@@ -32,7 +32,7 @@ class _AllOrderScreenState extends State<AllOrderScreen> {
   getUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      userID = prefs.getString('userID')??'';
+      token = prefs.getString('token')??'';
     });
   }
   Widget build(BuildContext context) {
@@ -53,8 +53,8 @@ class _AllOrderScreenState extends State<AllOrderScreen> {
         ),
         ),
         actions: [
-          FutureBuilder<CartResponse?>(
-            future: getCart(userID),
+          FutureBuilder<CartRes?>(
+            future: getCart(token),
             builder: (context,snapshot){
               if(snapshot.connectionState == ConnectionState.done){
                 return Stack(
@@ -64,7 +64,7 @@ class _AllOrderScreenState extends State<AllOrderScreen> {
                       padding: const EdgeInsets.fromLTRB(0, 8, 16, 8.0),
                       child: IconButton(
                           onPressed: () {
-                            userID!= null ? Get.to(CartScreen(userID: int.parse(userID.toString()))):
+                            token!= null ? Get.to(CartScreen(token:token)):
                             Get.to(SignInScreen());
 
                           },
@@ -95,8 +95,8 @@ class _AllOrderScreenState extends State<AllOrderScreen> {
                 padding: const EdgeInsets.fromLTRB(0, 8, 16, 8.0),
                 child: IconButton(
                     onPressed: () async {
-                      if(userID!= null) {
-                        Get.to(CartScreen(userID: int.parse(userID.toString())));
+                      if(token!= null) {
+                        Get.to(CartScreen(token: token));
                       }
                       else{
                         String refresh = await Navigator.push(
@@ -192,7 +192,7 @@ class _AllOrderScreenState extends State<AllOrderScreen> {
                 child: TabBarView(
                   children: [
                 Center(child:Text('Không tồn tại đơn hàng')),
-                    SuccessOrderScreen(userID: userID??''),
+                    SuccessOrderScreen(userID: token??''),
         Center(child:Text('Không tồn tại đơn hàng')),
         Center(child:Text('Không tồn tại đơn hàng')),
         Center(child:Text('Không tồn tại đơn hàng')),

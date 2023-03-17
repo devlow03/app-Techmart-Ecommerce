@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-
 import '../../api/request/api.dart';
 import '../../api/response/city_response.dart';
 import '../../api/response/district_response.dart';
-import '../../api/response/get_info.dart';
-import '../../api/response/info_order_response.dart';
+import '../../api/response/info_order_rsp.dart';
+import '../../api/response/user.dart';
 import '../../api/response/ward_response.dart';
 class OrderDetailScreen extends StatefulWidget {
-  final Order? data;
-  const OrderDetailScreen({Key? key, this.data}) : super(key: key);
+  final InfoOrderRsp? data;
+  final int index;
+  const OrderDetailScreen({Key? key, this.data, required this.index}) : super(key: key);
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
@@ -38,8 +38,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         onRefresh: ()async{},
         child: ListView(
           children: [
-            FutureBuilder<GetInfo?>(
-              future: getInfo(widget.data?.userID),
+            FutureBuilder<User?>(
+              future: getInfo(widget.data?.order?[widget.index].userID),
               builder: (context, snapshot) {
                 return Center(
                   child: Container(
@@ -81,7 +81,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 ),
                               ),
                               Text(
-                                'K${widget.data?.userID}H ',
+                                'K${widget.data?.order?[widget.index].userID}H ',
                                 // overflow: TextOverflow.ellipsis,
                                 // maxLines: 1,
                                 style: TextStyle(fontSize: 15),
@@ -107,7 +107,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 style: TextStyle(fontSize: 15),
                               ),
                               Text(
-                                widget.data?.fullname??'',
+                                widget.data?.order?[widget.index].fullname??'',
                                 style: TextStyle(fontSize: 16),
                               ),
                             ],
@@ -176,7 +176,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                       menuMaxHeight:
                                       MediaQuery.of(context).size.height * .9,
                                       isDense: true,
-                                      value: widget.data?.city,
+                                      value: widget.data?.order?[widget.index].city,
                                       isExpanded: true,
                                     ),
                                   ],
@@ -188,7 +188,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               height: 15,
                             ),
                             FutureBuilder<DistrictResponse?>(
-                              future: getDistrict(widget.data?.city),
+                              future: getDistrict(widget.data?.order?[widget.index].city),
                               builder: (context, snapshot) {
                                 return Column(
                                   children: [
@@ -246,7 +246,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                       }).toList(),
                                       onChanged:null,
 
-                                      value: widget.data?.district,
+                                      value: widget.data?.order?[widget.index].district,
                                       isExpanded: true,
                                     ),
                                   ],
@@ -259,7 +259,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               height: 15,
                             ),
                             FutureBuilder<WardResponse?>(
-                              future: getWard(widget.data?.district),
+                              future: getWard(widget.data?.order?[widget.index].district),
                               builder: (context, snapshot) {
                                 return Column(
                                   children: [
@@ -316,7 +316,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                             ));
                                       }).toList(),
                                       onChanged:null,
-                                      value: widget.data?.ward,
+                                      value: widget.data?.order?[widget.index].ward,
                                       isExpanded: true,
                                     ),
                                   ],
@@ -350,7 +350,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 style: TextStyle(fontSize: 15),
                               ),
                               Text(
-                                '${snapshot.data?.user?.phone ?? ''}',
+                                '${widget.data?.order?[widget.index].phone?? ''}',
                                 style: TextStyle(fontSize: 16),
                               ),
 
@@ -387,7 +387,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   children: [
                     Row(
                       children: [
-                        Text(widget.data?.idOrder??''),
+                        Text(widget.data?.order?[widget.index].idOrder??''),
                         SizedBox(height: 15,),
 
                       ],
@@ -401,7 +401,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           width: 15,
                         ),
                         Image.network(
-                          widget.data?.image?? '',
+                          widget.data?.order?[widget.index].image?? '',
                           width:
                           MediaQuery.of(context).size.width *
                               .25,
@@ -415,7 +415,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.data?.name ??
+                                widget.data?.order?[widget.index].name ??
                                     '',
                                 style: TextStyle(
                                     fontSize: 16,
@@ -424,7 +424,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               SizedBox(
                                 height: 15,
                               ),
-                              Text('${NumberFormat.simpleCurrency(locale: 'vi').format(int.parse(widget.data?.price ?? ''))}',
+                              Text('${NumberFormat.simpleCurrency(locale: 'vi').format(int.parse(widget.data?.order?[widget.index].price.toString() ?? ''))}',
                                 style:TextStyle(
                                     fontSize: 12
                                 ) ,),
@@ -439,7 +439,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                         style: TextStyle(fontSize: 12,color: Colors.black),
                                         children: <TextSpan>[
                                           TextSpan(
-                                              text:'${NumberFormat.simpleCurrency(locale: 'vi').format(int.parse(widget.data?.price?? '')*int.parse(widget.data?.amount?? ''))}',
+                                              text:'${NumberFormat.simpleCurrency(locale: 'vi').format(int.parse(widget.data?.order?[widget.index].price.toString()?? '')*int.parse(widget.data?.order?[widget.index].amount.toString()?? ''))}',
                                               style: TextStyle(color: Colors.redAccent)
                                           )
 
@@ -474,7 +474,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               padding:
                               const EdgeInsets.symmetric(
                                   horizontal: 20,vertical: 5),
-                              child: Text("x${widget.data?.amount ??''}"
+                              child: Text("x${widget.data?.order?[widget.index].amount ??''}"
                                 ,
                               ),
                             ),

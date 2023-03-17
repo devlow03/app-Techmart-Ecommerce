@@ -13,8 +13,8 @@ import '../../../../api/response/district_response.dart';
 import '../../../../api/response/ward_response.dart';
 import '../../../../widget/global_textfield.dart';
 class CreateInfoScreen extends StatefulWidget {
- final String? userID;
-  const CreateInfoScreen({Key? key, this.userID,  }) : super(key: key);
+ final String? token;
+  const CreateInfoScreen({Key? key, this.token,  }) : super(key: key);
 
   @override
   State<CreateInfoScreen> createState() => _CreateInfoScreenState();
@@ -439,17 +439,18 @@ class _CreateInfoScreenState extends State<CreateInfoScreen> {
                               );
                               await Future.delayed(Duration(seconds: 2));
                               await createInfo(
+                                widget.token,
                                   image,
                                   fullName.text,
                                   cityChosse,
                                   disChosse,
                                   wardChosse,
                                   phone.text,
-                                  widget.userID).then((value)async{
+                                  ).then((value)async{
                                 SharedPreferences prefs = await SharedPreferences.getInstance();
                                 setState((){
-                                  String? userID = widget.userID;
-                                  prefs.setString('userID', userID!);
+                                  String? token = widget.token;
+                                  prefs.setString('token', token!);
                                   Navigator.pop(context);
                                   Navigator.pop(context);
                                   Navigator.pop(context);
@@ -458,7 +459,9 @@ class _CreateInfoScreenState extends State<CreateInfoScreen> {
                                 });
 
                                 // Navigator.pop(context,'refresh');
-                              }).catchError((e){
+                              }).catchError((e)async{
+                                SharedPreferences prefs = await SharedPreferences.getInstance();
+                                print(prefs.getString('token'));
                                 Get.dialog(AlertDialog(
                                   backgroundColor: Colors.white,
                                   insetPadding: EdgeInsets.symmetric(vertical: 10),

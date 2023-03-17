@@ -108,15 +108,15 @@ class _SignInScreenState extends State<SignInScreen> {
                             await postSignin(emailControl.text, passControl.text).then((value) async {
                               SharedPreferences prefs = await SharedPreferences.getInstance();
                               setState((){
-                                String? userID = value?.userId;
-                                prefs.setString('userID', userID!);
+                                String? token = value?.jwt.toString();
+                                prefs.setString('token', token!);
 
                               });
                               Navigator.pop(context);
                               Navigator.pop(context,'refresh');
 
 
-                            }).catchError((error) {
+                            }).catchError((error) async{
                               Get.dialog(AlertDialog(
                                 backgroundColor: Colors.white,
                                 insetPadding:

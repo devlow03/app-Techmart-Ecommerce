@@ -118,7 +118,7 @@ class SearchPage extends SearchDelegate{
                   onTap: () {
                     Get.to(ProductDetailScreen(
                       idCategory: snapshot.data?.searchProducts?[index].idCategory.toString(),
-                      id: snapshot.data?.searchProducts?[index].toString(),
+                      id: snapshot.data?.searchProducts?[index].id.toString(),
                       name: snapshot.data?.searchProducts?[index].name,
                       price: snapshot.data?.searchProducts?[index].price.toString(),
                       image:snapshot.data?.searchProducts?[index].imgLink,

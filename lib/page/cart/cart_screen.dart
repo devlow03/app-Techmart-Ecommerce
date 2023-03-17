@@ -1,45 +1,44 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_store/api/request/api.dart';
-import 'package:smart_store/api/response/get_info.dart';
 import 'package:smart_store/page/order/order_product.dart';
 import 'package:smart_store/page/product_detail/product_detail_screen.dart';
-import '../../api/response/cart_response.dart';
-import '../../api/response/total_cart_response.dart';
+import '../../api/response/Cart_res.dart';
+import '../../api/response/user.dart';
 
 class CartScreen extends StatefulWidget {
-  final int? userID;
+  final String? token;
 
-  const CartScreen({Key? key, this.userID}) : super(key: key);
+  const CartScreen({Key? key, this.token,}) : super(key: key);
 
   @override
   State<CartScreen> createState() => _CartScreenState();
 }
 
 class _CartScreenState extends State<CartScreen> {
-  String? coutCart;
+  int? coutCart = 1;
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.grey.shade100,
         appBar: AppBar(
-          leading: FutureBuilder<CartResponse?>(
-            future: getCart(widget.userID),
-            builder: (context,snapshot){
+          leading: FutureBuilder<CartRes?>(
+            future: getCart(widget.token),
+            builder: (context, snapshot) {
               return IconButton(
-                onPressed: () async{
-                  SharedPreferences prefs = await SharedPreferences.getInstance();
-                  setState((){
+                onPressed: () async {
+                  SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
+                  setState(() {
                     Get.back();
                     // Get.to(CartScreen(userID: int.parse(userID.toString()),));
                   });
-
                 },
                 icon: Icon(
                   Icons.arrow_back,
@@ -47,7 +46,6 @@ class _CartScreenState extends State<CartScreen> {
                 ),
               );
             },
-
           ),
           elevation: 0.0,
           backgroundColor: Colors.grey.shade100,
@@ -62,39 +60,45 @@ class _CartScreenState extends State<CartScreen> {
           ),
         ),
         body: RefreshIndicator(
-          onRefresh: () async {},
+          onRefresh: () async {
+
+          },
           child: ListView(
             children: [
               SizedBox(
                 height: 20,
               ),
-              FutureBuilder<CartResponse?>(
-                  future: getCart(widget.userID),
+              FutureBuilder<CartRes?>(
+                  future: getCart(widget.token),
                   builder: (context, snapshot) {
-                    if(snapshot.hasData){
+                    if (snapshot.hasData) {
                       return ListView.separated(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
                         itemCount: snapshot.data?.cart?.length ?? 0,
                         itemBuilder: (context, index) {
                           return Dismissible(
-                            key: ValueKey(snapshot.data?.cart?[index].id.toString()),
+                            key: ValueKey(
+                                snapshot.data?.cart?[index].id.toString()),
                             direction: DismissDirection.endToStart,
                             background: Container(
                               margin: EdgeInsets.all(10),
-                              width: MediaQuery.of(context).size.width*.95,
+                              width: MediaQuery.of(context).size.width * .95,
                               decoration: BoxDecoration(
                                 color: Colors.redAccent,
                                 borderRadius: BorderRadius.circular(20),
                                 // border: Border.all(color: Colors.grey.shade300)
-
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-                                    Icon(Icons.delete_forever,size: 60,color: Colors.white,)
+                                    Icon(
+                                      Icons.delete_forever,
+                                      size: 60,
+                                      color: Colors.white,
+                                    )
                                   ],
                                 ),
                               ),
@@ -102,68 +106,69 @@ class _CartScreenState extends State<CartScreen> {
                             confirmDismiss: (direction) {
                               return showDialog(
                                   context: context,
-                                  builder: (cart){
+                                  builder: (cart) {
                                     return AlertDialog(
-                                     content: Text('Bạn có muốn xóa sản phẩm này ?'),
+                                      content: Text(
+                                          'Bạn có muốn xóa sản phẩm này ?'),
                                       actions: [
                                         ElevatedButton(
-                                            style:ElevatedButton.styleFrom(
-                                              primary: Colors.white,
+                                            style: ElevatedButton.styleFrom(
+                                                primary: Colors.white,
                                                 side: BorderSide(
-                                                    color: Colors.grey.shade200
-                                                )
-                                            ),
-                                            onPressed: (){
+                                                    color:
+                                                        Colors.grey.shade200)),
+                                            onPressed: () {
                                               Navigator.of(cart).pop(false);
                                             },
-                                            child: Text('Không',
-                                            style: TextStyle(
-                                              color: Colors.black
-                                            ),
-                                            )
-                                        ),
+                                            child: Text(
+                                              'Không',
+                                              style: TextStyle(
+                                                  color: Colors.black),
+                                            )),
                                         ElevatedButton(
-                                            style:ElevatedButton.styleFrom(
-                                                primary: Colors.red
-                                            ),
-                                            onPressed: (){
+                                            style: ElevatedButton.styleFrom(
+                                                primary: Colors.red),
+                                            onPressed: () {
                                               Navigator.of(cart).pop(true);
                                             },
-                                            child: Text('Đồng ý')
-                                        )
+                                            child: Text('Đồng ý'))
                                       ],
                                     );
                                   });
                             },
-                            onDismissed: (direction){
-                              setState((){
-                                deleteCart(snapshot.data?.cart?[index].idCart??'');
+                            onDismissed: (direction) {
+                              setState(() {
+                                deleteCart(
+                                  widget.token,
+                                    snapshot.data?.cart?[index].idCart ?? '');
                               });
                             },
                             child: InkWell(
-                              onTap: (){
-
-                              },
+                              onTap: () {},
                               child: InkWell(
-                                onTap: (){
+                                onTap: () {
                                   Get.to(ProductDetailScreen(
-                                    idCategory: snapshot.data?.cart?[index].idCategory,
-                                    id: snapshot.data?.cart?[index].id,
+                                    idCategory: snapshot
+                                        .data?.cart?[index].idCategory
+                                        .toString(),
+                                    id: snapshot.data?.cart?[index].id
+                                        .toString(),
                                     image: snapshot.data?.cart?[index].imgLink,
-                                    descript: snapshot.data?.cart?[index].descript,
-                                    price: snapshot.data?.cart?[index].price,
+                                    descript:
+                                        snapshot.data?.cart?[index].descript,
+                                    price: snapshot.data?.cart?[index].price
+                                        .toString(),
                                     name: snapshot.data?.cart?[index].name,
-
                                   ));
                                 },
                                 child: Container(
                                   margin: EdgeInsets.all(10),
-                                  width: MediaQuery.of(context).size.width*.95,
+                                  width:
+                                      MediaQuery.of(context).size.width * .95,
                                   decoration: BoxDecoration(
-                                      color: Colors.white,
+                                    color: Colors.white,
                                     borderRadius: BorderRadius.circular(20),
                                     // border: Border.all(color: Colors.grey.shade300)
-
                                   ),
                                   child: Padding(
                                     padding: const EdgeInsets.all(10),
@@ -173,12 +178,16 @@ class _CartScreenState extends State<CartScreen> {
                                         SizedBox(
                                           width: 15,
                                         ),
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(5),
+                                        ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(5),
                                           child: Image.network(
-                                            snapshot.data?.cart?[index].imgLink ?? '',
-                                            width:
-                                            MediaQuery.of(context).size.width *
+                                            snapshot.data?.cart?[index]
+                                                    .imgLink ??
+                                                '',
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
                                                 .35,
                                             height: 110,
                                             fit: BoxFit.cover,
@@ -190,27 +199,31 @@ class _CartScreenState extends State<CartScreen> {
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 snapshot.data?.cart?[index]
-                                                    .name ??
+                                                        .name ??
                                                     '',
                                                 style: TextStyle(
                                                     fontSize: 16,
-                                                    fontWeight: FontWeight.w600),
+                                                    fontWeight:
+                                                        FontWeight.w600),
                                               ),
                                               SizedBox(
                                                 height: 15,
                                               ),
-                                              Text(NumberFormat.simpleCurrency(
-                                                  locale: 'vi')
-                                                  .format(int.parse(snapshot.data
-                                                  ?.cart?[index].price ??
-                                                  '')),
-                                                style:TextStyle(
-                                                  fontSize: 12
-                                                ) ,),
+                                              Text(
+                                                NumberFormat.simpleCurrency(
+                                                        locale: 'vi')
+                                                    .format(int.parse((snapshot
+                                                                .data
+                                                                ?.cart?[index]
+                                                                .price ??
+                                                            '')
+                                                        .toString())),
+                                                style: TextStyle(fontSize: 12),
+                                              ),
                                               SizedBox(
                                                 height: 20,
                                               ),
@@ -218,126 +231,129 @@ class _CartScreenState extends State<CartScreen> {
                                                 mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                                 children: [
-                                                 Container(
-                                                   child: Row(
-                                                     children: [
-                                                       InkWell(
-                                                           onTap: () {
-                                                             setState(()  {
-                                                               int.parse(snapshot.data?.cart?[index].amount??'') <=1
-                                                                   ?
-                                                               Get.dialog(AlertDialog(
-                                                                 content: Text('Bạn có muốn xóa sản phẩm này ?'),
-                                                                 actions: [
-                                                                   ElevatedButton(
-                                                                       style:ElevatedButton.styleFrom(
-                                                                           primary: Colors.white,
-                                                                           side: BorderSide(
-                                                                               color: Colors.grey.shade200
-                                                                           )
-                                                                       ),
-                                                                       onPressed: (){
-                                                                         Get.back();
-                                                                       },
-                                                                       child: Text('Không',
-                                                                         style: TextStyle(
-                                                                             color: Colors.black
-                                                                         ),
-                                                                       )
-                                                                   ),
-                                                                   ElevatedButton(
-                                                                       style:ElevatedButton.styleFrom(
-                                                                         primary: Colors.red,
+                                                  Container(
+                                                    child: Row(
+                                                      children: [
+                                                        InkWell(
+                                                            onTap: () {
+                                                              setState(()  {
+                                                                int.parse((snapshot.data?.cart?[index].amount??'').toString()) <=1
+                                                                    ?
+                                                                Get.dialog(AlertDialog(
+                                                                  content: Text('Bạn có muốn xóa sản phẩm này ?'),
+                                                                  actions: [
+                                                                    ElevatedButton(
+                                                                        style:ElevatedButton.styleFrom(
+                                                                            primary: Colors.white,
+                                                                            side: BorderSide(
+                                                                                color: Colors.grey.shade200
+                                                                            )
+                                                                        ),
+                                                                        onPressed: (){
+                                                                          Get.back();
+                                                                        },
+                                                                        child: Text('Không',
+                                                                          style: TextStyle(
+                                                                              color: Colors.black
+                                                                          ),
+                                                                        )
+                                                                    ),
+                                                                    ElevatedButton(
+                                                                        style:ElevatedButton.styleFrom(
+                                                                          primary: Colors.red,
 
-                                                                       ),
-                                                                       onPressed: (){
-                                                                         setState((){
-                                                                           deleteCart(snapshot.data?.cart?[index].idCart??'').then((value)async{
-                                                                             await getCart(widget.userID).then((value)async{
-                                                                               print(value?.cart?.length);
-                                                                               SharedPreferences prefs = await SharedPreferences.getInstance();
-                                                                               setState((){
-                                                                                 var numCart = value?.cart?.length.toString();
-                                                                                 prefs.setString('numCart', numCart??'');
-                                                                               });
+                                                                        ),
+                                                                        onPressed: (){
+                                                                          setState((){
+                                                                            deleteCart(widget.token,snapshot.data?.cart?[index].idCart??'').then((value)async{
+                                                                              await getCart(widget.token).then((value)async{
+                                                                                print(value?.cart?.length);
+                                                                                SharedPreferences prefs = await SharedPreferences.getInstance();
+                                                                                setState((){
+                                                                                  var numCart = value?.cart?.length.toString();
+                                                                                  prefs.setString('numCart', numCart??'');
+                                                                                });
 
-                                                                             });
-                                                                           });
-                                                                           Get.back();
-                                                                         });
-                                                                       },
-                                                                       child: Text('Đồng ý')
-                                                                   )
-                                                                 ],
-                                                               )):
-                                                               postUpdateAmount(int.parse(snapshot.data?.cart?[index].amount??'')-1,snapshot.data?.cart?[index].idCart );
+                                                                              });
+                                                                            });
+                                                                            Get.back();
+                                                                          });
+                                                                        },
+                                                                        child: Text('Đồng ý')
+                                                                    )
+                                                                  ],
+                                                                )):
+                                                                postUpdateAmount(int.parse((snapshot.data?.cart?[index].amount??'').toString())-1,
+                                                                    snapshot.data?.cart?[index].idCart,
+                                                                    widget.token
+                                                                );
 
-                                                             });
-                                                           },
-                                                           child: Container(
-                                                             decoration: BoxDecoration(
-                                                                 shape: BoxShape.circle,
-                                                                 border: Border.all(
-                                                                     color: Colors.grey.shade300
-                                                                 )
-                                                             ),
-                                                             child: Padding(
-                                                               padding: const EdgeInsets.all(5),
-                                                               child: Icon(
-                                                                 Icons.remove,
-                                                                 size: 20,
-                                                               ),
-                                                             ),
-                                                           )),
+                                                              });
+                                                            },
+                                                            child: Container(
+                                                              decoration: BoxDecoration(
+                                                                  shape: BoxShape.circle,
+                                                                  border: Border.all(
+                                                                      color: Colors.grey.shade300
+                                                                  )
+                                                              ),
+                                                              child: Padding(
+                                                                padding: const EdgeInsets.all(5),
+                                                                child: Icon(
+                                                                  Icons.remove,
+                                                                  size: 20,
+                                                                ),
+                                                              ),
+                                                            )),
 
 
-                                                       Padding(
-                                                         padding:
-                                                         const EdgeInsets.symmetric(
-                                                             horizontal: 8),
-                                                         child: Text(
-                                                           (snapshot.data?.cart?[index]
-                                                               .amount ??
-                                                               ''),
-                                                         ),
-                                                       ),
+                                                        Padding(
+                                                          padding:
+                                                          const EdgeInsets.symmetric(
+                                                              horizontal: 8),
+                                                          child: Text(
+                                                            (snapshot.data?.cart?[index]
+                                                                .amount ??
+                                                                '').toString(),
+                                                          ),
+                                                        ),
 
-                                                       InkWell(
-                                                           onTap: () async {
-                                                             setState(() {
-                                                               postUpdateAmount(
-                                                                 int.parse(snapshot
-                                                                     .data
-                                                                     ?.cart?[index]
-                                                                     .amount ??
-                                                                     '') +
-                                                                     1,
-                                                                 snapshot
-                                                                     .data
-                                                                     ?.cart?[index]
-                                                                     .idCart ??
-                                                                     '',
-                                                               );
-                                                             });
-                                                           },
-                                                           child:
-                                                           Container(
-                                                               decoration: BoxDecoration(
-                                                                   shape: BoxShape.circle,
+                                                        InkWell(
+                                                            onTap: () async {
+                                                              setState(() {
+                                                                postUpdateAmount(
+                                                                    int.parse((snapshot
+                                                                        .data
+                                                                        ?.cart?[index]
+                                                                        .amount ??
+                                                                        '').toString())+
+                                                                        1,
+                                                                    snapshot
+                                                                        .data
+                                                                        ?.cart?[index]
+                                                                        .idCart ??
+                                                                        '',
+                                                                    widget.token
+                                                                );
+                                                              });
+                                                            },
+                                                            child:
+                                                            Container(
+                                                                decoration: BoxDecoration(
+                                                                  shape: BoxShape.circle,
 
-                                                                 color: Colors.black,
-                                                               ),
-                                                               child: Padding(
-                                                                 padding: const EdgeInsets.all(5),
-                                                                 child: Icon(Icons.add, size: 20,
-                                                                 color: Colors.white,
+                                                                  color: Colors.black,
+                                                                ),
+                                                                child: Padding(
+                                                                  padding: const EdgeInsets.all(5),
+                                                                  child: Icon(Icons.add, size: 20,
+                                                                    color: Colors.white,
 
-                                                                 ),
-                                                               ))),
-                                                     ],
-                                                   ),
-                                                 ),
-                                                  SizedBox(width: 10,),
+                                                                  ),
+                                                                ))),
+                                                      ],
+                                                    ),
+                                                  ),
                                                   Container(
                                                     decoration: BoxDecoration(
                                                         shape: BoxShape.circle,
@@ -345,7 +361,6 @@ class _CartScreenState extends State<CartScreen> {
                                                             color: Colors.grey.shade300
                                                         )
                                                     ),
-
                                                     child: Padding(
                                                       padding: const EdgeInsets.all(5.0),
                                                       child: InkWell(
@@ -376,8 +391,8 @@ class _CartScreenState extends State<CartScreen> {
                                                                   ),
                                                                   onPressed: (){
                                                                     setState((){
-                                                                      deleteCart(snapshot.data?.cart?[index].idCart??'').then((value)async{
-                                                                        await getCart(widget.userID).then((value)async{
+                                                                      deleteCart(widget.token,snapshot.data?.cart?[index].idCart??'').then((value)async{
+                                                                        await getCart(widget.token).then((value)async{
                                                                           print(value?.cart?.length);
                                                                           SharedPreferences prefs = await SharedPreferences.getInstance();
                                                                           setState((){
@@ -396,7 +411,7 @@ class _CartScreenState extends State<CartScreen> {
                                                           ));
                                                         },
                                                         child: Icon(Icons.delete,
-                                                        color: Colors.redAccent,
+                                                          color: Colors.redAccent,
                                                           size: 20,
                                                         ),
                                                       ),
@@ -407,7 +422,6 @@ class _CartScreenState extends State<CartScreen> {
                                             ],
                                           ),
                                         ),
-
                                       ],
                                     ),
                                   ),
@@ -417,20 +431,17 @@ class _CartScreenState extends State<CartScreen> {
                           );
                         },
                         separatorBuilder: (BuildContext context, int index) {
-                          return Center(
-
-                          );
+                          return Center();
                         },
                       );
                     }
-                    if(snapshot.hasError){
+                    if (snapshot.hasError) {
                       return Center(
-                      child: Text("Không có sản phẩm trong giỏ hàng"));
-                        }
-                    return Center(child: CircularProgressIndicator(
-
-                    ),);
-
+                          child: Text("Không có sản phẩm trong giỏ hàng"));
+                    }
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
                   }),
               SizedBox(
                 height: 30,
@@ -441,14 +452,14 @@ class _CartScreenState extends State<CartScreen> {
         bottomNavigationBar: Container(
           // padding: EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(color: Colors.grey.shade200),
-          child:  FutureBuilder<TotalCartResponse?>(
-            future: getTotalCart(widget.userID),
+          child:  FutureBuilder<CartRes?>(
+            future: getCart(widget.token),
             builder: (context, snapshot) {
 
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 child:
-                snapshot.data?.totalCart?.name!=null?
+                snapshot.data?.total!=null?
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -470,7 +481,7 @@ class _CartScreenState extends State<CartScreen> {
                             Text(
                               NumberFormat.simpleCurrency(locale: 'vi')
                                   .format(int.parse(
-                                  snapshot.data?.totalCart?.total ?? '')),
+                                  snapshot.data?.total.toString() ?? '')),
                               style: TextStyle(
                                   color: Colors.red,
                                   height: 2,
@@ -482,17 +493,19 @@ class _CartScreenState extends State<CartScreen> {
                         ),
                       ),
                     ),
-                    FutureBuilder<GetInfo?>(
-                      future: getInfo(widget.userID),
-                      builder: (context,snapshot){
+                    FutureBuilder<User?>(
+                      future: getInfo(widget.token),
+                      builder: (context,snapshot1){
                         return  Expanded(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 5),
                             child: ElevatedButton(
                               onPressed: () {
                                 Get.to(OrderProduct(
-                                  userID: widget.userID,
-                                  userData: snapshot.data?.user,
+                                  token: widget.token,
+                                  userData: snapshot1.data,
+                                  totalCart: snapshot.data?.total.toString(),
+
                                 ));
                               },
                               child: Padding(

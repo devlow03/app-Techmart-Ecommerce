@@ -18,6 +18,7 @@ import 'package:get/get.dart';
 import 'package:smart_store/widget/global_webview.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../api/response/Banner_res.dart';
+import '../../api/response/Cart_res.dart';
 import '../../api/response/Category_res.dart';
 import '../../api/response/cart_response.dart';
 import '../../api/response/prod_category_res.dart';
@@ -47,13 +48,13 @@ class _HomePageScreenState extends State<HomePageScreen> {
   ];
   int activeIndex = 0;
   TextEditingController nameController = TextEditingController();
-  String host = "https://smartstore.khanhnhat.top";
   @override
-  String? userID;
+  String? token;
 
   void initState(){
     setState((){
       getUser();
+
 
     });
   }
@@ -61,8 +62,10 @@ class _HomePageScreenState extends State<HomePageScreen> {
   getUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      userID = prefs.getString('userID');
+      token = prefs.getString('token');
+      print(token);
     });
+    await getInfo(token);
   }
   // checkInternet()async{
   //   await InternetConnectionChecker().hasConnection;
@@ -113,8 +116,8 @@ class _HomePageScreenState extends State<HomePageScreen> {
             ),
           ),
           actions: [
-            FutureBuilder<CartResponse?>(
-              future: getCart(userID),
+            FutureBuilder<CartRes?>(
+              future: getCart(token),
               builder: (context,snapshot){
                 if(snapshot.connectionState == ConnectionState.done){
                   return Stack(
@@ -124,7 +127,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
                         padding: const EdgeInsets.fromLTRB(0, 8, 16, 8.0),
                         child: IconButton(
                             onPressed: () {
-                              userID!= null ? Get.to(CartScreen(userID: int.parse(userID.toString()))):
+                              token!= null ? Get.to(CartScreen(token: token)):
                               Get.to(SignInScreen());
 
                             },
@@ -155,8 +158,8 @@ class _HomePageScreenState extends State<HomePageScreen> {
                   padding: const EdgeInsets.fromLTRB(0, 8, 16, 8.0),
                   child: IconButton(
                       onPressed: () async {
-                        if(userID!= null) {
-                          Get.to(CartScreen(userID: int.parse(userID.toString())));
+                        if(token!= null) {
+                          Get.to(CartScreen(token:token));
                         }
                         else{
                           String refresh = await Navigator.push(
@@ -440,7 +443,6 @@ class _HomePageScreenState extends State<HomePageScreen> {
                           color: Colors.grey.shade100,
                         ),
                         SizedBox(height: 10,),
-                        SizedBox(height: 20,),
                         ListView.separated(
                           physics: NeverScrollableScrollPhysics(),
                           scrollDirection: Axis.vertical,

@@ -7,10 +7,11 @@ import 'package:smart_store/page/all_order/all_order_screen.dart';
 import 'package:smart_store/widget/global_textfield.dart';
 
 import '../../api/request/api.dart';
+import '../../api/response/Cart_res.dart';
 import '../../api/response/cart_response.dart';
 import '../../api/response/city_response.dart';
-import '../../api/response/get_info.dart';
 import '../../api/response/total_cart_response.dart';
+import '../../api/response/user.dart';
 import '../../api/response/ward_response.dart';
 import '../index_screen.dart';
 import '../product_detail/product_detail_screen.dart';
@@ -20,9 +21,10 @@ class OrderProduct extends StatefulWidget {
   final String? namePro;
   final int? amount;
   final String? price;
-  final int? userID;
+  final String? token;
   final String? idPro;
-  const OrderProduct({Key? key, this.userID, this.thumnail, this.namePro, this.amount, this.price, this.idPro,  this.userData, }) : super(key: key);
+  final String? totalCart;
+  const OrderProduct({Key? key, this.token, this.thumnail, this.namePro, this.amount, this.price, this.idPro,  this.userData, this.totalCart, }) : super(key: key);
 
   @override
   State<OrderProduct> createState() => _OrderProductState();
@@ -44,6 +46,17 @@ class _OrderProductState extends State<OrderProduct> {
       cityCode = widget.userData?.city;
       disCode = widget.userData?.district;
       wardCode = widget.userData?.ward;
+      getUser();
+    });
+  }
+  
+  getUser ()async{
+    await getInfo(widget.token).then((user){
+      setState((){
+        cityCode = user?.city;
+        disCode = user?.district.toString();
+        wardCode = user?.ward.toString();
+      });
     });
   }
 
@@ -68,7 +81,9 @@ class _OrderProductState extends State<OrderProduct> {
         ),
       ),
       body: RefreshIndicator(
-        onRefresh: ()async{},
+        onRefresh: ()async{
+          setState((){});
+        },
         child: ListView(
           children: [
             Container(
@@ -84,7 +99,6 @@ class _OrderProductState extends State<OrderProduct> {
 
                   ),
                   SizedBox(height: 15,),
-
                   FutureBuilder<CityResponse?>(
                     future: getCity(),
                     builder: (context, snapshot) {
@@ -140,7 +154,7 @@ class _OrderProductState extends State<OrderProduct> {
                             menuMaxHeight:
                             MediaQuery.of(context).size.height * .9,
                             isDense: true,
-                            value: widget.userData?.city,
+                            value: cityCode!=null?cityCode:cityChosse,
                             isExpanded: true,
                           ),
                         ],
@@ -320,7 +334,7 @@ class _OrderProductState extends State<OrderProduct> {
 
               ),
             ),
-            widget.thumnail?.length != null ? Container(
+            widget.idPro?.length != null ? Container(
               decoration: BoxDecoration(color: Colors.white),
               child: Padding(
                 padding: const EdgeInsets.all(10),
@@ -439,8 +453,8 @@ class _OrderProductState extends State<OrderProduct> {
                 ),
               ),
             ):
-            FutureBuilder<CartResponse?>(
-                future: getCart(widget.userID),
+            FutureBuilder<CartRes?>(
+                future: getCart(widget.token),
                 builder: (context, snapshot) {
                   if(snapshot.hasData){
                     return ListView.separated(
@@ -509,17 +523,17 @@ class _OrderProductState extends State<OrderProduct> {
                           },
                           onDismissed: (direction){
                             setState((){
-                              deleteCart(snapshot.data?.cart?[index].idCart??'');
+                              deleteCart(widget.token,snapshot.data?.cart?[index].idCart??'');
                             });
                           },
                           child: InkWell(
                             onTap: (){
                               Get.to(ProductDetailScreen(
-                                idCategory: snapshot.data?.cart?[index].idCategory,
-                                id: snapshot.data?.cart?[index].id,
+                                idCategory: snapshot.data?.cart?[index].idCategory.toString(),
+                                id: snapshot.data?.cart?[index].id.toString(),
                                 image: snapshot.data?.cart?[index].imgLink,
                                 descript: snapshot.data?.cart?[index].descript,
-                                price: snapshot.data?.cart?[index].price,
+                                price: snapshot.data?.cart?[index].price.toString(),
                                 name: snapshot.data?.cart?[index].name,
 
                               ));
@@ -573,9 +587,9 @@ class _OrderProductState extends State<OrderProduct> {
                                           ),
                                           Text(NumberFormat.simpleCurrency(
                                               locale: 'vi')
-                                              .format(int.parse(snapshot.data
+                                              .format(int.parse((snapshot.data
                                               ?.cart?[index].price ??
-                                              '')),
+                                              '').toString())),
                                             style:TextStyle(
                                                 fontSize: 12
                                             ) ,),
@@ -592,7 +606,7 @@ class _OrderProductState extends State<OrderProduct> {
                                                     InkWell(
                                                         onTap: () {
                                                           setState(()  {
-                                                            int.parse(snapshot.data?.cart?[index].amount??'') <=1
+                                                            int.parse((snapshot.data?.cart?[index].amount??'').toString()) <=1
                                                                 ?
                                                             Get.dialog(AlertDialog(
                                                               content: Text('Bạn có muốn xóa sản phẩm này ?'),
@@ -620,8 +634,8 @@ class _OrderProductState extends State<OrderProduct> {
                                                                     ),
                                                                     onPressed: (){
                                                                       setState((){
-                                                                        deleteCart(snapshot.data?.cart?[index].idCart??'').then((value)async{
-                                                                          await getCart(widget.userID).then((value)async{
+                                                                        deleteCart(widget.token,snapshot.data?.cart?[index].idCart??'').then((value)async{
+                                                                          await getCart(widget.token).then((value)async{
                                                                             print(value?.cart?.length);
                                                                             SharedPreferences prefs = await SharedPreferences.getInstance();
                                                                             setState((){
@@ -638,7 +652,10 @@ class _OrderProductState extends State<OrderProduct> {
                                                                 )
                                                               ],
                                                             )):
-                                                            postUpdateAmount(int.parse(snapshot.data?.cart?[index].amount??'')-1,snapshot.data?.cart?[index].idCart );
+                                                            postUpdateAmount(int.parse((snapshot.data?.cart?[index].amount??'').toString())-1,
+                                                                snapshot.data?.cart?[index].idCart,
+                                                              widget.token
+                                                            );
 
                                                           });
                                                         },
@@ -666,7 +683,7 @@ class _OrderProductState extends State<OrderProduct> {
                                                       child: Text(
                                                         (snapshot.data?.cart?[index]
                                                             .amount ??
-                                                            ''),
+                                                            '').toString(),
                                                       ),
                                                     ),
 
@@ -674,17 +691,18 @@ class _OrderProductState extends State<OrderProduct> {
                                                         onTap: () async {
                                                           setState(() {
                                                             postUpdateAmount(
-                                                              int.parse(snapshot
+                                                              int.parse((snapshot
                                                                   .data
                                                                   ?.cart?[index]
                                                                   .amount ??
-                                                                  '') +
+                                                                  '').toString())+
                                                                   1,
                                                               snapshot
                                                                   .data
                                                                   ?.cart?[index]
                                                                   .idCart ??
                                                                   '',
+                                                              widget.token
                                                             );
                                                           });
                                                         },
@@ -742,8 +760,8 @@ class _OrderProductState extends State<OrderProduct> {
                                                               ),
                                                               onPressed: (){
                                                                 setState((){
-                                                                  deleteCart(snapshot.data?.cart?[index].idCart??'').then((value)async{
-                                                                    await getCart(widget.userID).then((value)async{
+                                                                  deleteCart(widget.token,snapshot.data?.cart?[index].idCart??'').then((value)async{
+                                                                    await getCart(widget.token).then((value)async{
                                                                       print(value?.cart?.length);
                                                                       SharedPreferences prefs = await SharedPreferences.getInstance();
                                                                       setState((){
@@ -805,7 +823,7 @@ class _OrderProductState extends State<OrderProduct> {
         bottomNavigationBar: Container(
           // padding: EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(color: Colors.grey.shade200),
-          child: widget.thumnail?.length!= null? Padding(
+          child: widget.idPro?.length!= null? Padding(
             padding: const EdgeInsets.symmetric(vertical: 20),
             child:
 
@@ -829,7 +847,7 @@ class _OrderProductState extends State<OrderProduct> {
                         ),
                         Text(
                           NumberFormat.simpleCurrency(locale: 'vi')
-                              .format(int.parse(widget.price??'')* itemCount),
+                              .format(int.parse(widget.price.toString()) * itemCount),
                           style: TextStyle(
                               color: Colors.red,
                               height: 2,
@@ -873,7 +891,7 @@ class _OrderProductState extends State<OrderProduct> {
                                     )),
                                 SizedBox(height: 20,),
                                 Text(
-                                  "Đặt hàng không thành công!",
+                                  "Vui lòng nhập đầy đủ thông tin",
                                   style: TextStyle(
                                       fontSize: 17,
                                       fontWeight: FontWeight.w700,
@@ -907,61 +925,65 @@ class _OrderProductState extends State<OrderProduct> {
                               cityCode!=null?cityCode:cityChosse,
                                disCode!=null?disCode:disChosse,
                                 wardCode!=null?wardCode:wardChosse,
-                              phone.text, int.parse(widget.price??'')* itemCount, widget.userID).then((value) async{
+                              phone.text,
+                              int.parse(widget.price??'')* itemCount,
+                              widget.idPro.toString(),
+                              widget.namePro.toString(),
+                              widget.thumnail.toString(),
+                              itemCount.toString(),
+                              widget.price.toString(),
+                              widget.token
+                          ).then((value) async{
+                            Get.dialog(AlertDialog(
+                              backgroundColor: Colors.white,
+                              insetPadding:
+                              EdgeInsets.symmetric(vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                  BorderRadius.circular(8)),
+                              contentPadding: EdgeInsets.all(15),
 
-                            await postPushProduct(widget.idPro, widget.namePro, widget.thumnail?? '', itemCount, widget.price, value?.idOrder).then((value) {
-                              Get.dialog(AlertDialog(
-                                backgroundColor: Colors.white,
-                                insetPadding:
-                                EdgeInsets.symmetric(vertical: 10),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                    BorderRadius.circular(8)),
-                                contentPadding: EdgeInsets.all(15),
-
-                                title: Column(
-                                  children: [
-                                    Container(
-                                        decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                                color: Colors.green)),
-                                        child: Icon(
-                                          Icons.check,
-                                          size: 50,
-                                          color:Colors.green,
-                                        )),
-                                    SizedBox(height: 20,),
-                                    Text(
-                                      "Đặt hàng thành công!",
-                                      style: TextStyle(
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.w700,
-                                          letterSpacing: 1),
-                                    ),
-                                  ],
-                                ),
-                                // content: Text('Tài khoản này đã tồn tại trên hệ thống!',style: TextStyle(fontSize: 14),textAlign: TextAlign.center,),
-                                actions: [
-                                  Center(
-                                    child: Container(
-                                      // padding:EdgeInsets.all(30),
-                                      width: MediaQuery.of(context)
-                                          .size
-                                          .width *
-                                          .6,
-                                      height: 50,
-                                      child: ElevatedButton(
-                                          onPressed: () async {
-                                            Get.offAll(MainPage());
-                                          },
-                                          child: Text("Quay lại trang chủ")),
-                                    ),
-                                  )
+                              title: Column(
+                                children: [
+                                  Container(
+                                      decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                              color: Colors.green)),
+                                      child: Icon(
+                                        Icons.check,
+                                        size: 50,
+                                        color:Colors.green,
+                                      )),
+                                  SizedBox(height: 20,),
+                                  Text(
+                                    "Đặt hàng thành công!",
+                                    style: TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 1),
+                                  ),
                                 ],
-                              ));
-
-                            }).catchError((error){
+                              ),
+                              // content: Text('Tài khoản này đã tồn tại trên hệ thống!',style: TextStyle(fontSize: 14),textAlign: TextAlign.center,),
+                              actions: [
+                                Center(
+                                  child: Container(
+                                    // padding:EdgeInsets.all(30),
+                                    width: MediaQuery.of(context)
+                                        .size
+                                        .width *
+                                        .6,
+                                    height: 50,
+                                    child: ElevatedButton(
+                                        onPressed: () async {
+                                          Get.offAll(MainPage());
+                                        },
+                                        child: Text("Quay lại trang chủ")),
+                                  ),
+                                )
+                              ],
+                            )).catchError((err){
                               Get.dialog(AlertDialog(
                                 backgroundColor: Colors.white,
                                 insetPadding:
@@ -1013,6 +1035,7 @@ class _OrderProductState extends State<OrderProduct> {
                                 ],
                               ));
                             });
+
                           });
 
                         }
@@ -1035,243 +1058,235 @@ class _OrderProductState extends State<OrderProduct> {
               ],
             ),
           ):
-          FutureBuilder<TotalCartResponse?>(
-            future: getTotalCart(widget.userID),
-            builder: (context, snapshot) {
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child:
+           widget.totalCart!=null?
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child:
-                snapshot.data?.totalCart?.name!=null?
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Tổng: ',
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  height: 2,
-                                  fontSize: 14,
-                                  letterSpacing: 1),
-                            ),
-                            Text(
-                              NumberFormat.simpleCurrency(locale: 'vi')
-                                  .format(int.parse(
-                                  snapshot.data?.totalCart?.total ?? '')),
-                              style: TextStyle(
-                                  color: Colors.red,
-                                  height: 2,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.5),
-                            ),
-                          ],
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Tổng: ',
+                          style: TextStyle(
+                              color: Colors.black,
+                              height: 2,
+                              fontSize: 14,
+                              letterSpacing: 1),
                         ),
-                      ),
+                        Text(
+                          NumberFormat.simpleCurrency(locale: 'vi')
+                              .format(int.parse(
+                             widget.totalCart?? '')),
+                          style: TextStyle(
+                              color: Colors.red,
+                              height: 2,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5),
+                        ),
+                      ],
                     ),
+                  ),
+                ),
 
-                    // SizedBox(width: 1,),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 5),
-                        child: ElevatedButton(
-                          onPressed: () async{
+                // SizedBox(width: 1,),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    child: ElevatedButton(
+                      onPressed: () async{
 
-                             if(fullName.text==''  && phone.text==''){
-                               Get.dialog(AlertDialog(
-                                 backgroundColor: Colors.white,
-                                 insetPadding:
-                                 EdgeInsets.symmetric(vertical: 10),
-                                 shape: RoundedRectangleBorder(
-                                     borderRadius:
-                                     BorderRadius.circular(8)),
-                                 contentPadding: EdgeInsets.all(15),
+                        if(fullName.text==''  && phone.text==''){
+                          Get.dialog(AlertDialog(
+                            backgroundColor: Colors.white,
+                            insetPadding:
+                            EdgeInsets.symmetric(vertical: 10),
+                            shape: RoundedRectangleBorder(
+                                borderRadius:
+                                BorderRadius.circular(8)),
+                            contentPadding: EdgeInsets.all(15),
 
-                                 title: Column(
-                                   children: [
-                                     Container(
-                                         decoration: BoxDecoration(
-                                             shape: BoxShape.circle,
-                                             border: Border.all(
-                                                 color: Colors.red)),
-                                         child: Icon(
-                                           Icons.close,
-                                           size: 50,
-                                           color:Colors.red,
-                                         )),
-                                     SizedBox(height: 20,),
-                                     Text(
-                                       "Đặt hàng không thành công!",
-                                       style: TextStyle(
-                                           fontSize: 17,
-                                           fontWeight: FontWeight.w700,
-                                           letterSpacing: 1),
-                                     ),
-                                   ],
-                                 ),
-                                 // content: Text('Tài khoản này đã tồn tại trên hệ thống!',style: TextStyle(fontSize: 14),textAlign: TextAlign.center,),
-                                 actions: [
-                                   Center(
-                                     child: Container(
-                                       // padding:EdgeInsets.all(30),
-                                       width: MediaQuery.of(context)
-                                           .size
-                                           .width *
-                                           .6,
-                                       height: 50,
-                                       child: ElevatedButton(
-                                           onPressed: () async {
-                                             Get.back();
-                                           },
-                                           child: Text("Quay lại")),
-                                     ),
-                                   )
-                                 ],
-                               ));
-                             }
-                             else{
-                               await postCreateOrder(
-                                   fullName.text,
-                                   cityCode!=null?cityCode:cityChosse,
-                                   disCode!=null?disCode:disChosse,
-                                   wardCode!=null?wardCode:wardChosse,
-                                   phone.text,
-                                   snapshot.data?.totalCart?.total ?? '',
-                                   widget.userID).then((value) {
-                                 Get.dialog(AlertDialog(
-                                   backgroundColor: Colors.white,
-                                   insetPadding:
-                                   EdgeInsets.symmetric(vertical: 10),
-                                   shape: RoundedRectangleBorder(
-                                       borderRadius:
-                                       BorderRadius.circular(8)),
-                                   contentPadding: EdgeInsets.all(15),
-
-                                   title: Column(
-                                     children: [
-                                       Container(
-                                           decoration: BoxDecoration(
-                                               shape: BoxShape.circle,
-                                               border: Border.all(
-                                                   color: Colors.green)),
-                                           child: Icon(
-                                             Icons.check,
-                                             size: 50,
-                                             color:Colors.green,
-                                           )),
-                                       SizedBox(height: 20,),
-                                       Text(
-                                         "Đặt hàng thành công!",
-                                         style: TextStyle(
-                                             fontSize: 17,
-                                             fontWeight: FontWeight.w700,
-                                             letterSpacing: 1),
-                                       ),
-                                     ],
-                                   ),
-                                   // content: Text('Tài khoản này đã tồn tại trên hệ thống!',style: TextStyle(fontSize: 14),textAlign: TextAlign.center,),
-                                   actions: [
-                                     Center(
-                                       child: Container(
-                                         // padding:EdgeInsets.all(30),
-                                         width: MediaQuery.of(context)
-                                             .size
-                                             .width *
-                                             .6,
-                                         height: 50,
-                                         child: ElevatedButton(
-                                             onPressed: () async {
-                                               Get.offAll(MainPage());
-                                             },
-                                             child: Text("Quay lại trang chủ")),
-                                       ),
-                                     )
-                                   ],
-                                 ));
-
-                               },).catchError((e){
-                                 Get.dialog(AlertDialog(
-                                   backgroundColor: Colors.white,
-                                   insetPadding:
-                                   EdgeInsets.symmetric(vertical: 10),
-                                   shape: RoundedRectangleBorder(
-                                       borderRadius:
-                                       BorderRadius.circular(8)),
-                                   contentPadding: EdgeInsets.all(15),
-
-                                   title: Column(
-                                     children: [
-                                       Container(
-                                           decoration: BoxDecoration(
-                                               shape: BoxShape.circle,
-                                               border: Border.all(
-                                                   color: Colors.red)),
-                                           child: Icon(
-                                             Icons.close,
-                                             size: 50,
-                                             color:Colors.red,
-                                           )),
-                                       SizedBox(height: 20,),
-                                       Text(
-                                         "Đặt hàng không thành công!",
-                                         style: TextStyle(
-                                             fontSize: 17,
-                                             fontWeight: FontWeight.w700,
-                                             letterSpacing: 1),
-                                       ),
-                                     ],
-                                   ),
-                                   // content: Text('Tài khoản này đã tồn tại trên hệ thống!',style: TextStyle(fontSize: 14),textAlign: TextAlign.center,),
-                                   actions: [
-                                     Center(
-                                       child: Container(
-                                         // padding:EdgeInsets.all(30),
-                                         width: MediaQuery.of(context)
-                                             .size
-                                             .width *
-                                             .6,
-                                         height: 50,
-                                         child: ElevatedButton(
-                                             onPressed: () async {
-                                               Get.back();
-                                             },
-                                             child: Text("Quay lại")),
-                                       ),
-                                     )
-                                   ],
-                                 ));
-                               });
-                             }
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 15),
-                            child: Text(
-                              "Đặt hàng",
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w500),
+                            title: Column(
+                              children: [
+                                Container(
+                                    decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color: Colors.red)),
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 50,
+                                      color:Colors.red,
+                                    )),
+                                SizedBox(height: 20,),
+                                Text(
+                                  "Vui lòng nhập đầy đủ thông tin!",
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 1),
+                                ),
+                              ],
                             ),
-                          ),
-                          style: ElevatedButton.styleFrom(
+                            // content: Text('Tài khoản này đã tồn tại trên hệ thống!',style: TextStyle(fontSize: 14),textAlign: TextAlign.center,),
+                            actions: [
+                              Center(
+                                child: Container(
+                                  // padding:EdgeInsets.all(30),
+                                  width: MediaQuery.of(context)
+                                      .size
+                                      .width *
+                                      .6,
+                                  height: 50,
+                                  child: ElevatedButton(
+                                      onPressed: () async {
+                                        Get.back();
+                                      },
+                                      child: Text("Quay lại")),
+                                ),
+                              )
+                            ],
+                          ));
+                        }
+                        else{
+                          await postCreateOrder(
+                              fullName.text,
+                              cityCode!=null?cityCode:cityChosse,
+                              disCode!=null?disCode:disChosse,
+                              wardCode!=null?wardCode:wardChosse,
+                              phone.text,
+                            widget.totalCart ?? '',
+                              widget.token).then((value) {
+                            Get.dialog(AlertDialog(
+                              backgroundColor: Colors.white,
+                              insetPadding:
+                              EdgeInsets.symmetric(vertical: 10),
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30)),
-                              primary: Colors.blue.shade700),
+                                  borderRadius:
+                                  BorderRadius.circular(8)),
+                              contentPadding: EdgeInsets.all(15),
+
+                              title: Column(
+                                children: [
+                                  Container(
+                                      decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                              color: Colors.green)),
+                                      child: Icon(
+                                        Icons.check,
+                                        size: 50,
+                                        color:Colors.green,
+                                      )),
+                                  SizedBox(height: 20,),
+                                  Text(
+                                    "Đặt hàng thành công!",
+                                    style: TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 1),
+                                  ),
+                                ],
+                              ),
+                              // content: Text('Tài khoản này đã tồn tại trên hệ thống!',style: TextStyle(fontSize: 14),textAlign: TextAlign.center,),
+                              actions: [
+                                Center(
+                                  child: Container(
+                                    // padding:EdgeInsets.all(30),
+                                    width: MediaQuery.of(context)
+                                        .size
+                                        .width *
+                                        .6,
+                                    height: 50,
+                                    child: ElevatedButton(
+                                        onPressed: () async {
+                                          Get.offAll(MainPage());
+                                        },
+                                        child: Text("Quay lại trang chủ")),
+                                  ),
+                                )
+                              ],
+                            ));
+
+                          },).catchError((e){
+                            Get.dialog(AlertDialog(
+                              backgroundColor: Colors.white,
+                              insetPadding:
+                              EdgeInsets.symmetric(vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                  BorderRadius.circular(8)),
+                              contentPadding: EdgeInsets.all(15),
+
+                              title: Column(
+                                children: [
+                                  Container(
+                                      decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                              color: Colors.red)),
+                                      child: Icon(
+                                        Icons.close,
+                                        size: 50,
+                                        color:Colors.red,
+                                      )),
+                                  SizedBox(height: 20,),
+                                  Text(
+                                    "Đặt hàng không thành công!",
+                                    style: TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 1),
+                                  ),
+                                ],
+                              ),
+                              // content: Text('Tài khoản này đã tồn tại trên hệ thống!',style: TextStyle(fontSize: 14),textAlign: TextAlign.center,),
+                              actions: [
+                                Center(
+                                  child: Container(
+                                    // padding:EdgeInsets.all(30),
+                                    width: MediaQuery.of(context)
+                                        .size
+                                        .width *
+                                        .6,
+                                    height: 50,
+                                    child: ElevatedButton(
+                                        onPressed: () async {
+                                          Get.back();
+                                        },
+                                        child: Text("Quay lại")),
+                                  ),
+                                )
+                              ],
+                            ));
+                          });
+                        }
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        child: Text(
+                          "Đặt hàng",
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w500),
                         ),
                       ),
-                    )
-                  ],
-                ):null,
-              );
-
-
-            },
-          ),
+                      style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30)),
+                          primary: Colors.blue.shade700),
+                    ),
+                  ),
+                )
+              ],
+            ):null,
+          )
         )
     );
   }

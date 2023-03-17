@@ -10,18 +10,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:smart_store/api/response/comment_response.dart';
 import 'package:smart_store/api/response/prodslider_res.dart';
-import 'package:smart_store/api/response/search_response.dart';
-import 'package:smart_store/api/response/slider_product_response.dart';
 import 'package:smart_store/page/profile/signin/sigin_screen.dart';
-import 'package:smart_store/page/search_page/search_page.dart';
 import 'package:smart_store/widget/global_product.dart';
 import 'package:smart_store/widget/photo_view.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../api/request/api.dart';
-import '../../api/response/cart_response.dart';
+import '../../api/response/Cart_res.dart';
 import '../../api/response/favorite_response.dart';
-import '../../api/response/get_info.dart';
 import '../../api/response/prod_category_res.dart';
+import '../../api/response/user.dart';
 import '../all_products/all_product_screen.dart';
 import '../cart/cart_screen.dart';
 import '../order/order_product.dart';
@@ -51,7 +47,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   int _itemCount = 1;
   List imageComment = [];
-  static String? userID;
+  static String? token;
   void initState() {
     super.initState();
     setState(() {
@@ -62,7 +58,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Future getUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      userID = prefs.getString('userID');
+      token = prefs.getString('token');
     });
   }
   File? image;
@@ -146,8 +142,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
         actions: [
           //don't delete
-          FutureBuilder<CartResponse?>(
-            future: getCart(userID),
+          FutureBuilder<CartRes?>(
+            future: getCart(token),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
                 return Stack(
@@ -157,9 +153,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       padding: const EdgeInsets.fromLTRB(0, 8, 16, 8.0),
                       child: IconButton(
                           onPressed: () async {
-                            if (userID != null) {
+                            if (token != null) {
                               Get.to(CartScreen(
-                                  userID: int.parse(userID.toString())));
+                                token: token,
+
+                              ));
+
                             } else {
                               String refresh = await Navigator.push(context,
                                   MaterialPageRoute(builder: (context) {
@@ -195,7 +194,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 padding: const EdgeInsets.fromLTRB(0, 8, 16, 8.0),
                 child: IconButton(
                     onPressed: () {
-                      Get.to(CartScreen(userID: int.parse(userID.toString())));
+                      Get.to(CartScreen(
+                        token: token,
+                      ));
                     },
                     icon: SvgPicture.asset(
                       'assets/images/cart.svg',
@@ -396,20 +397,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               ],
                             ),
                             FutureBuilder<FavoriteResponse?>(
-                                future: getFavoriteId(userID, widget.id),
+                                future: getFavoriteId(token, widget.id),
                                 builder: (context, snapshot) {
                                   return Row(
                                     children: [
                                       InkWell(
                                           onTap: () async {
-                                            if (userID != null) {
+                                            if (token != null) {
 
                                                 snapshot.data?.favorite
                                                             ?.length ==
                                                         null
                                                     ? await addFavorite(
                                                             widget.id,
-                                                            userID)
+                                                            token)
                                                         .then((value) async {
                                                         SharedPreferences
                                                             prefs =
@@ -451,7 +452,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                                       })
                                                     : await removeFavorite(
                                                             widget.id,
-                                                            userID)
+                                                            token)
                                                         .then((value) async {
                                                         SharedPreferences
                                                             prefs =
@@ -752,14 +753,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                                     await createComment(
                                                         commentText,
                                                         null,
-                                                        userID,
+                                                        token,
                                                         widget.id);
                                                   }
                                                   else{
                                                     await createComment(
                                                         commentText,
                                                         image!,
-                                                        userID,
+                                                        token,
                                                         widget.id);
                                                   }
                                                 }
@@ -1189,10 +1190,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               children: [
                 InkWell(
                   onTap: () async {
-                    if (userID != null) {
+                    if (token != null) {
 
                         await postAddCart(
-                                userID, widget.id, _itemCount)
+                                token, widget.id, _itemCount)
                             .then((value) async {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             backgroundColor: Colors.black54,
@@ -1237,24 +1238,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                   ),
                 ),
-                FutureBuilder<GetInfo?>(
-                  future: getInfo(userID),
+                FutureBuilder<User?>(
+                  future: getInfo(token),
                   builder: (context, snapshot) {
                     return Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 5),
                         child: ElevatedButton(
                           onPressed: () async {
-                            if (userID != null) {
-                              Get.to(OrderProduct(
-                                thumnail: widget.image,
-                                namePro: widget.name,
-                                price: widget.price,
-                                amount: _itemCount,
-                                idPro: widget.id,
-                                userID: int.parse(userID ?? ''),
-                                userData: snapshot.data?.user,
-                              ));
+                            if (token != null) {
+                              Get.to(
+                                OrderProduct(
+                                  token: token,
+                                  idPro: widget.id,
+                                  thumnail: widget.image,
+                                  namePro: widget.name,
+                                  price: widget.price,
+
+
+                                )
+                              );
                             } else {
                               String refresh = await Navigator.push(context,
                                   MaterialPageRoute(builder: (context) {

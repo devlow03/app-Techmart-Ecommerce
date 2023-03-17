@@ -8,9 +8,8 @@ import 'package:smart_store/page/profile/profile_detail/profile_detail_screen.da
 import 'package:smart_store/page/profile/signin/sigin_screen.dart';
 import 'package:smart_store/page/profile/signup/signup_screen.dart';
 import 'package:smart_store/widget/global_webview.dart';
-
 import '../../api/request/api.dart';
-import '../../api/response/get_info.dart';
+import '../../api/response/user.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({
@@ -23,7 +22,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   @override
 
-  static String? userID;
+  static String? token;
   void initState() {
     super.initState();
     setState(() {
@@ -38,7 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future getUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      userID = prefs.getString('userID');
+      token = prefs.getString('token');
     });
   }
 
@@ -60,7 +59,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           setState((){
             setState(() {
-              userID = prefs.getString('userID');
+              token = prefs.getString('token');
             });
           });
         },
@@ -73,7 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     // color: Colors.grey.shade100
                   ),
                   child: Visibility(
-                    visible: userID!=null,
+                    visible:token!=null,
                     replacement: Container(
                       decoration: BoxDecoration(
                           color: Colors.white
@@ -369,8 +368,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Column(
                       children: [
                         SizedBox(height: 10,),
-                        FutureBuilder<GetInfo?>(
-                          future: getInfo(userID),
+                        FutureBuilder<User?>(
+                          future: getInfo(token),
                           builder: (context, snapshot){
                             return InkWell(
                               onTap: ()async{
@@ -379,7 +378,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     MaterialPageRoute(
                                         builder:(context){
                                           return ProfileDetailScreen(
-                                            userID: userID,
+                                            token: token,
+                                            userData: snapshot.data,
                                           );
                                         })
                                 );
@@ -404,7 +404,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           CircleAvatar(
                                             backgroundColor: Colors.transparent,
                                             radius: 30,
-                                            backgroundImage: NetworkImage(snapshot.data?.user?.avatar??'',),
+                                            backgroundImage: NetworkImage('https://smartstore.khanhnhat.top${snapshot.data?.avatar??''}',),
                                           ),
                                           SizedBox(width: 40,),
                                           Column(
@@ -417,7 +417,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                 ),
                                               ),
                                               SizedBox(height: 10,),
-                                              Text(snapshot.data?.user?.fullname??'',
+                                              Text(snapshot.data?.fullname??'',
                                                 style: TextStyle(height: 1,
                                                     color: Colors.white,
                                                   letterSpacing: 1
@@ -493,7 +493,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                              SizedBox(height: 20,),
                              InkWell(
                                onTap: ()async{
-                                 Get.to(FavoriteScreen());
+                                 // Get.to(FavoriteScreen());
                                },
                                child: Container(
                                  padding: EdgeInsets.all(10),
@@ -632,7 +632,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                  SharedPreferences prefs = await SharedPreferences.getInstance();
                                  prefs.remove('userID');
                                  setState(() {
-                                   userID = null;
+                                   token = null;
                                  });
                                },
                                child: Container(

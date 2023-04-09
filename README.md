@@ -10,8 +10,10 @@ Một số hình ảnh về ứng dụng:
 
   
 
-![Screenshot_1681016533](https://user-images.githubusercontent.com/108052745/230755341-393a6472-b6c2-4afb-bf04-3d5b2663a178.png)
-Trang chủ
+
+
+![Screenshot_1681016533](https://user-images.githubusercontent.com/108052745/230755401-425247c2-d84a-4e94-9bd8-59d09453d905.png)
 
    
  
+![Screenshot_1681016711](https://user-images.githubusercontent.com/108052745/230755439-b6fef906-b85c-44a1-a60a-77c5ee437650.png)

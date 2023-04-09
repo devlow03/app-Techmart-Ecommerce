@@ -5,7 +5,8 @@
   - Bình luận về sản phẩm (đang bug)
   - Tin tức công nghệ được cập nhật liên tục(chỉ tiếng anh)
   - Thay đổi cập nhật lại thông tin khách hàng khi cần thiết
-<h1>a</h1>
+
+<a href="" style="color:blue">Tải xuống ứng dụng</a>
 
 
   

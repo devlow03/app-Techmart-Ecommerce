@@ -1,6 +1,6 @@
 # smart_store
 
-A new Flutter project.
+Ứng dụng thương mại điện tử Smart Store
 
 ## Getting Started
 
